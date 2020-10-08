@@ -30,7 +30,7 @@ class NetworkMinimizer
     std::vector<double> get_positions();
 
     // affine transformation
-    void minimize(int maxIter = 100);
+    void minimize(int maxIter = 1000);
     void minimize_affine(double Ddelta);
 };
 
@@ -54,13 +54,13 @@ NetworkMinimizer::NetworkMinimizer( int N,const std::vector<double>& rInit, Netw
     // initialize minimizer type
     //T = gsl_multimin_fdfminimizer_conjugate_fr;
     //T = gsl_multimin_fdfminimizer_conjugate_pr;
-    T = gsl_multimin_fdfminimizer_vector_bfgs2; 
+    //T = gsl_multimin_fdfminimizer_vector_bfgs2; 
     //T = gsl_multimin_fdfminimizer_vector_bfgs; 
-    //T = gsl_multimin_fdfminimizer_steepest_descent; 
+    T = gsl_multimin_fdfminimizer_steepest_descent; 
 
     // initialize minimizer s
     s = gsl_multimin_fdfminimizer_alloc(T,2*N);
-    gsl_multimin_fdfminimizer_set(s, &multimin_func, r, 1., .1);
+    gsl_multimin_fdfminimizer_set(s, &multimin_func, r, 1., .01);
 
 }
 
@@ -82,7 +82,7 @@ void NetworkMinimizer::minimize(int maxIter)
         std::cout <<"iter: " <<  iter << "\n"; 
         if(status) break;
 
-        status = gsl_multimin_test_gradient(s->gradient, 1.e-12);
+        status = gsl_multimin_test_gradient(s->gradient, 1.e-9);
 
         if(status == GSL_SUCCESS ) std::cout << "min found at: \n";
 
