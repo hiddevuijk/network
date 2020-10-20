@@ -104,9 +104,12 @@ void NetworkMinimizer::minimize(int maxIter)
 
 void NetworkMinimizer::minimize_affine(double Ddelta)
 {
-    for(int i=0;i<2*N;i+=2) 
+    // first an affine displacement
+    for(int i=0;i<2*N;i+=2) {
         (s->x->data)[i] += Ddelta * (s->x->data)[i+1];
+    }
 
+    // minimize the energy
     minimize();
 
 }
