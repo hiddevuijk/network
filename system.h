@@ -53,10 +53,10 @@ NetworkMinimizer::NetworkMinimizer( int N,const std::vector<double>& rInit, Netw
 
     // initialize minimizer type
     //T = gsl_multimin_fdfminimizer_conjugate_fr;
-    //T = gsl_multimin_fdfminimizer_conjugate_pr;
+    T = gsl_multimin_fdfminimizer_conjugate_pr;
     //T = gsl_multimin_fdfminimizer_vector_bfgs2; 
     //T = gsl_multimin_fdfminimizer_vector_bfgs; 
-    T = gsl_multimin_fdfminimizer_steepest_descent; 
+    //T = gsl_multimin_fdfminimizer_steepest_descent; 
 
     // initialize minimizer s
     s = gsl_multimin_fdfminimizer_alloc(T,2*N);

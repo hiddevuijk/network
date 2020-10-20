@@ -22,7 +22,7 @@ int main()
     vector<double> rInit(2*N);
     rInit[0] = 0.0;  rInit[1] = 0.0;
     rInit[2] = 1.0;  rInit[3] = 1.0;
-    rInit[4] = 2.0;  rInit[5] = 0.0;
+    rInit[4] = 300.0;  rInit[5] = 0.0;
 
 
     int Nspring = 3;
