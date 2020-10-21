@@ -16,13 +16,16 @@ int main()
 {
 
 
-
-    ifstream in("graph.txt");
+    ifstream in("topology.txt");
     Graph g(in);
-    //g.deleteEdge(4,5);
     g.showAdj();
     cout << endl;
 
+    g.deleteVertex(2);
+    g.showAdj();
+    cout << endl;
+
+    return 0;
 
     int v = 2;
     cout << "All nodes not connected to " << v << " are:\n";

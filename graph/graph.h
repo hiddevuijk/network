@@ -16,6 +16,7 @@ class Graph
 
     // add edge between v and w
     void addEdge(int v, int w);
+    int addVertex();
     void deleteEdge(int v, int w);
     void deleteVertex(int v);
 
@@ -36,6 +37,9 @@ class Graph
     int NE;
 
     std::vector<std::vector<int> > adj;
+
+    void exchangeVertexIndex(int v, int w);
+    void freeVertex(int v);
 
 };
 
@@ -60,9 +64,13 @@ void Graph::addEdge(int v, int w)
 
 }
 
-void Graph::deleteVertex(int v) 
+int Graph::addVertex() 
 {
+    NV += 1;
+    adj.push_back( std::vector<int>() );
 
+    //return the index of the created vertex
+    return NV-1;
 }
 void Graph::deleteEdge(int v, int w)
 {
@@ -73,6 +81,45 @@ void Graph::deleteEdge(int v, int w)
         adj[w].erase(it);
     }
 
+}
+
+void Graph::exchangeVertexIndex(int v, int w)
+{
+    // exchange location in adj
+    std::vector<int> adjv = adj[v];
+    adj[v] = adj[w];
+    adj[w] = adjv;
+
+    // in adj exchange v <--> w
+    for(int i=0; i < NV; ++i) {
+        for(std::vector<int>::size_type j=0;j< adj[i].size(); ++j) {
+            if( adj[i][j] == v ) adj[i][j] = w;
+            else if( adj[i][j] == w ) adj[i][j] = v;
+        }
+    } 
+}
+
+void Graph::freeVertex(int v)
+{
+    std::vector<int>::iterator it;
+    for(int i=0; i<NV; ++i) {
+        it = std::find(adj[i].begin(), adj[i].end(), v);
+        while( it != adj[i].end() ) {
+            adj[i].erase(it);
+            it = std::find(adj[i].begin(), adj[i].end(), v);
+        }
+    }
+}
+
+void Graph::deleteVertex(int v)
+{
+    // remove all connection toand from vertex v
+    freeVertex(v);
+    // exchange v with the last index
+    exchangeVertexIndex(v, NV-1);
+    // remove the vertex from adj list
+    adj.erase( adj.end()-1 );
+    NV -= 1;
 }
 
 Graph::Graph( std::ifstream& in)
