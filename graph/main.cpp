@@ -1,6 +1,6 @@
 
 
-#include "undirected_graph.h"
+#include "graph.h"
 #include "paths.h"
 #include "paths_bfs.h"
 

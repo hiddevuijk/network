@@ -1,5 +1,5 @@
-#ifndef GUARD_UNDIRECTED_GRAPH_H
-#define GUARD_UNDIRECTED_GRAPH_H
+#ifndef GUARD_GRAPH_H
+#define GUARD_GRAPH_H
 
 #include <vector>
 #include <algorithm>
