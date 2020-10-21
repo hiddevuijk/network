@@ -32,6 +32,12 @@ class Graph
         ++Nv;
     }
 
+    void addVertexToFilament(int fi, int i);
+
+    // remove bond i, j from filament fi
+    // create new filament with right side of old one
+    void cutFilament(int fi, int i, int j);
+
   private:
     class Vertex {
       public:
@@ -46,13 +52,13 @@ class Graph
 
 
         std::vector<int> adj;
-        std::vector<int> fils;
+        std::vector<int> filaments;
     };
   
     int Nv;
     std::vector<Vertex> vertices;
 
-
+    std::vector<std::vector<int> > filaments;
 };
 
 
@@ -116,6 +122,57 @@ void Graph::showAdj() const
 
     }
 }
+
+
+void Graph::addVertexToFilament(int fi, int i)
+{
+    filaments[fi].push_back(i); 
+    vertices[i].filaments.push_back(fi);
+}
+
+void Graph::cutFilament(int fi, int i, int j)
+{
+    // can be faster
+    std::vector<int>::iterator it_i = std::find( filaments[fi].begin(), filaments[fi].end() , i);
+    std::vector<int>::iterator it_j = std::find( filaments[fi].begin(), filaments[fi].end() , j);
+
+    int NnewFil = filaments.size();
+    if( it_i+1 == filaments[fi].end() or it_j+1 == filaments[fi].end() ) {
+        if(it_i<it_j) filaments[fi].erase( it_i, it_j+1);
+        else        filaments[fi].erase( it_j, it_i+1);
+        //  vertices i and j no longer belong to filaments fi
+        it_i = std::find( vertices[i].filaments.begin(), vertices[i].filaments.end(), fi);
+        vertices[i].filaments.erase(it_i);
+        it_j = std::find( vertices[j].filaments.begin(), vertices[j].filaments.end(), fi);
+        vertices[j].filaments.erase(it_j);
+    }else if( it_i == filaments[fi].begin() or it_j == filaments[fi].begin() ) {
+        if(it_i<it_j) filaments[fi].erase(it_i, it_j+1);
+        else          filaments[fi].erase(it_j, it_i+1);
+        //  vertices i and j no longer belong to filaments fi
+        it_i = std::find( vertices[i].filaments.begin(), vertices[i].filaments.end(), fi);
+        vertices[i].filaments.erase(it_i);
+        it_j = std::find( vertices[j].filaments.begin(), vertices[j].filaments.end(), fi);
+        vertices[j].filaments.erase(it_j);
+    }else if( it_i > it_j ) {
+        filaments.push_back( vector<int>() );
+        std::copy(it_i, fialments[fi].end(), back_inserter(filaments[filaments.size() - 1]);
+
+        it_i = filaments[NnewFil].begin();
+        it_j = filaments[NnewFil].end();
+        while( it_i < it_j ){
+            for(std::vector<int> it = it_i->filaments.begin();
+                it < filaments.end(); ++it ) {
+                if( *it == fi ) {
+                    *it = NnewFil;
+                    break;
+                }
+        } 
+    } else {
+        filaments.push_back( vector<int>() );
+
+    }
+}
+
 
 
 #endif
