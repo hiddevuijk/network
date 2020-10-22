@@ -16,6 +16,7 @@ class Graph
     Graph( std::ifstream& in);
 
     void showAdj() const;
+    void showBends() const;
       
     int V() const { return Nv; }
     void set_position(int vi, double x, double y)
@@ -36,15 +37,21 @@ class Graph
 
     void deleteVertex(int i);
 
-  private:
+  //private:
 
     class Bend {
       public:
+        Bend(): a(-1), b(-1), c(-1) {}
+        Bend(int a, int b, int c, int next, int prev, int fIndex)
+        : a(a), b(b), c(c), next(next), prev(prev), fIndex(fIndex)
+        {}
+
         int a,b,c;
         double theta0;
         int next, prev;
         int fIndex;
     };
+    void addBend(int vi, int viPrev, int viNext, int next, int prev, int fIndex);
 
     class Vertex {
       public:
@@ -57,14 +64,14 @@ class Graph
         void set_index(int i) { index = i; }
         void addAdj(int vi);
 
-
         std::vector<int> adj;
         std::vector<Bend> bends;
     };
   
+
     int Nv;
     std::vector<Vertex> vertices;
-    std::vector<Vertex*> filaments;
+    std::vector<int> filaments;
 };
 
 
@@ -154,6 +161,22 @@ void Graph::showAdj() const
     }
 }
 
+void Graph::showBends() const
+{
+    
+    for(int iv=0; iv < Nv; ++iv) {
+        std::cout << iv << " :\n";
+        for( std::vector<int>::size_type ib=0; ib < vertices[iv].bends.size(); ++ib ) {
+            std::cout << "\t " << vertices[iv].bends[ib].fIndex << '\t';
+            std::cout << "\t " << vertices[iv].bends[ib].a << '\t';
+            std::cout << "\t " << vertices[iv].bends[ib].c << '\n';
+        }
+        std::cout << std::endl;
+    }
+}
 
+
+void Graph::addBend(int vi, int viPrev, int viNext, int next, int prev, int fIndex) 
+{ vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, next, prev, fIndex) ); }
 
 #endif

@@ -18,11 +18,8 @@ int main()
     int Lx = 4;
 
     Graph g = generateNetwork(Nx,Ny,Lx);
-    //g.showAdj();
 
-    g.deleteVertex(6);
-    cout << endl;
-    g.showAdj();
+    g.showBends();
 
     return 0;
 }
