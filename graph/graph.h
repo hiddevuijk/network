@@ -41,7 +41,7 @@ class Graph
 
     class Bend {
       public:
-        Bend(): a(-1), b(-1), c(-1) {}
+        Bend(): a(-1), b(-1), c(-1), fIndex(-1) {}
         Bend(int a, int b, int c, int next, int prev, int fIndex)
         : a(a), b(b), c(c), next(next), prev(prev), fIndex(fIndex)
         {}
