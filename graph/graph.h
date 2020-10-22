@@ -126,11 +126,18 @@ void Graph::deleteVertex(int i)
     // change the index of the last vertex to i
     vertices[i] = vertices[viLast];
     vertices[i].index = i;
+
     // change connection to vertex viLast to vertex i
+    // ai is the index in the adj list of vertex i
     for(std::vector<int>::size_type ai=0; ai<vertices[i].adj.size(); ++ai ) {
-        std::vector<int>::iterator it = std::find( vertices[ai].adj.begin(), vertices[ai].adj.end(), i);
+        // vi_ai is the vertex to which vertex i is connected
+        // change the edge vi_ai <-> viLast to vi_ai <-> i
+        int vi_ai = vertices[i].adj[ai];
+        std::vector<int>::iterator it = std::find( vertices[vi_ai].adj.begin(), vertices[vi_ai].adj.end(), viLast);
         *it = i;
     }
+
+    // remove last vertex
     vertices.erase( vertices.end() - 1 );
     Nv -= 1;
 }
@@ -144,7 +151,6 @@ void Graph::showAdj() const
             std::cout << vertices[iv].adj[ie] << " ";
         }
         std::cout << std::endl;
-
     }
 }
 
