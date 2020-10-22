@@ -34,7 +34,7 @@ class Graph
         ++Nv;
     }
 
-
+    void deleteVertex(int i);
 
   private:
 
@@ -115,6 +115,25 @@ void Graph::deleteEdge(int i, int j)
 
 }
 
+void Graph::deleteVertex(int i)
+{
+    // delete all edge connected to vertex i
+    while( vertices[i].adj.size() > 0 ) {
+        deleteEdge(i, vertices[i].adj[0] );
+    }
+
+    int viLast = vertices.size() - 1; // index of the last vertex
+    // change the index of the last vertex to i
+    vertices[i] = vertices[viLast];
+    vertices[i].index = i;
+    // change connection to vertex viLast to vertex i
+    for(std::vector<int>::size_type ai=0; ai<vertices[i].adj.size(); ++ai ) {
+        std::vector<int>::iterator it = std::find( vertices[ai].adj.begin(), vertices[ai].adj.end(), i);
+        *it = i;
+    }
+    vertices.erase( vertices.end() - 1 );
+    Nv -= 1;
+}
 
 void Graph::showAdj() const
 {

@@ -20,7 +20,7 @@ int main()
     Graph g = generateNetwork(Nx,Ny,Lx);
     g.showAdj();
 
-    //g.deleteVertex(11);
+    g.deleteVertex(11);
     g.showAdj();
 
     return 0;
