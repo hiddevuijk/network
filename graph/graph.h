@@ -18,6 +18,8 @@ class Graph
     void showAdj() const;
       
     int V() const { return Nv; }
+    void set_position(int vi, double x, double y)
+    { vertices[vi].x = x; vertices[vi].y = y; }
 
     void addEdge(int i, int j)
     {
@@ -32,11 +34,7 @@ class Graph
         ++Nv;
     }
 
-    void addVertexToFilament(int fi, int i);
 
-    // remove bond i, j from filament fi
-    // create new filament with right side of old one
-    void cutFilament(int fi, int i, int j);
 
   private:
 

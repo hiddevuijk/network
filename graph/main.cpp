@@ -1,6 +1,7 @@
 
 
 #include "graph.h"
+#include "generate_network.h"
 
 #include <iostream>
 #include <vector>
@@ -12,14 +13,15 @@ using namespace std;
 
 int main()
 {
-    vector<int> v = { 0, 1, 2, 3, 4, 5, 6};
-    vector<vector<int> > filaments; 
+    int Nx = 4;
+    int Ny = 3;
+    int Lx = 4;
 
-    ifstream in("topology.txt");
+    Graph g = generateNetwork(Nx,Ny,Lx);
+    g.showAdj();
 
-    Graph g(in);
+    //g.deleteVertex(11);
+    g.showAdj();
 
-
-    g.showAdj(); 
     return 0;
 }

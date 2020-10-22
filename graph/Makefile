@@ -9,7 +9,7 @@ LFLAGS = -Wall -g
 $(TARGET): $(OBJS)
 	$(CC) $(LFLAGS)  $(OBJS) -o $(TARGET)
 
-main.o: main.cpp graph.h 
+main.o: main.cpp graph.h generate_network.h
 	$(CC) $(CFLAGS) main.cpp
 
 
