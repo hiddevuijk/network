@@ -42,16 +42,15 @@ class Graph
     class Bend {
       public:
         Bend(): a(-1), b(-1), c(-1), fIndex(-1) {}
-        Bend(int a, int b, int c, int next, int prev, int fIndex)
-        : a(a), b(b), c(c), next(next), prev(prev), fIndex(fIndex)
+        Bend(int a, int b, int c, int fIndex)
+        : a(a), b(b), c(c), fIndex(fIndex)
         {}
 
         int a,b,c;
         double theta0;
-        int next, prev;
         int fIndex;
     };
-    void addBend(int vi, int viPrev, int viNext, int next, int prev, int fIndex);
+    void addBend(int vi, int viPrev, int viNext, int fIndex);
 
     class Vertex {
       public:
@@ -176,7 +175,7 @@ void Graph::showBends() const
 }
 
 
-void Graph::addBend(int vi, int viPrev, int viNext, int next, int prev, int fIndex) 
-{ vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, next, prev, fIndex) ); }
+void Graph::addBend(int vi, int viPrev, int viNext, int fIndex) 
+{ vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, fIndex) ); }
 
 #endif

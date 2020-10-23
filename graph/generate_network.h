@@ -98,7 +98,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
             vi = xy2v(xi,yi,Nx,Ny); 
             viPrev = viNeighborW(xi,yi,Nx,Ny);
             viNext = viNeighborE(xi,yi,Nx,Ny);
-            graph.addBend(vi, viPrev, viNext, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext, filament_index);
         } 
         filament_index += 1;
     }
@@ -114,12 +114,12 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().c == viNext ) break;
        
         graph.filaments.push_back(vi);
-        graph.addBend(vi, viPrev, viNext, viPrev, viNext, filament_index);
+        graph.addBend(vi, viPrev, viNext, filament_index);
         while( viNext != v0 ) {
             viPrev = vi;
             vi = viNext;
             viNext = viNeighborNE(vi,Nx,Ny);  
-            graph.addBend(vi, viPrev, viNext, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext, filament_index);
         } 
 
         filament_index += 1;
@@ -135,13 +135,14 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         // if it exists it is the  last one added
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().c == viNext ) break;
 
+        // add a filament that starts at vi to the filament list
         graph.filaments.push_back(vi);
-        graph.addBend(vi, viPrev, viNext, viPrev, viNext, filament_index);
+        graph.addBend(vi, viPrev, viNext, filament_index);
         while(viNext != v0) {
             viPrev = vi;
             vi = viNext;
             viNext = viNeighborNW(vi,Nx,Ny);
-            graph.addBend(vi, viPrev, viNext, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext, filament_index);
         }
         filament_index += 1;
     }
