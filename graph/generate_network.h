@@ -5,8 +5,9 @@
 
 #include "graph.h"
 
-#include <math.h>
+#include "boost/random.hpp"
 
+#include <math.h>
 #include <iostream>
 
 // calculate vertex index from xi, yi
@@ -63,6 +64,11 @@ int viNeighborSW(int vi, int Nx, int Ny)
 
 Graph generateNetwork(int Nx, int Ny, double Lx)
 {
+    long int seed = 123456789;
+    boost::random::mt19937 rng(seed);
+    boost::random::uniform_int_distribution<int> randX(2,Nx-1);
+    boost::random::uniform_int_distribution<int> randY(2,Ny-1);
+
     // Ny must be even!!
 
     int Nv = Nx*Ny; // number of vertices
@@ -147,7 +153,18 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         filament_index += 1;
     }
        
-        
+
+    // cut filaments such that every filament is smaller than the system size        
+    // the first cut does not result in a new filament
+    // subsequent cuts result in a new filament if both sides of the cut are
+    // at least two vertices long
+    //int viStart;
+    //int filamentLength;
+    //for(int fi=0;fi<graph.filaments.size(); ++fi ) {
+     //   viStart = graph.filaments[fi]; 
+
+
+    //}
 
 
    return graph;

@@ -19,6 +19,7 @@ class Graph
     void showBends() const;
       
     int V() const { return Nv; }
+
     void set_position(int vi, double x, double y)
     { vertices[vi].x = x; vertices[vi].y = y; }
 
@@ -42,9 +43,10 @@ class Graph
     class Bend {
       public:
         Bend(): a(-1), b(-1), c(-1), fIndex(-1) {}
+
         Bend(int a, int b, int c, int fIndex)
-        : a(a), b(b), c(c), fIndex(fIndex)
-        {}
+            : a(a), b(b), c(c), fIndex(fIndex)
+            {}
 
         int a,b,c;
         double theta0;
@@ -67,12 +69,65 @@ class Graph
         std::vector<Bend> bends;
     };
   
+    // return length of filament i
+    int filamentLength(int fi);
+    bool hasNext(int b, int c);
+    bool hasNext( Graph::Bend bend);
+    Graph::Bend nextBend( Graph::Bend bend);
 
     int Nv;
     std::vector<Vertex> vertices;
     std::vector<int> filaments;
 };
 
+// check if vertex c has a bend with b->c->*
+bool Graph::hasNext(int b, int c)
+{
+    for(std::vector<Bend>::size_type bendI=0;bendI< vertices[b].bends.size(); ++bendI) {
+        if( vertices[b].bends[bendI].a == b
+           and vertices[b].bends[bendI].b == c) return true;
+    }
+
+    return false;
+}
+
+Graph::Bend Graph::nextBend( Graph::Bend bend)
+{
+    for( std::vector<Graph::Bend>::size_type bi=0;
+        bi < vertices[bend.c].bends.size(); ++ bi ) {
+
+        if( vertices[bend.c].bends[bi].fIndex == bend.fIndex ) {
+            return vertices[bend.c].bends[bi]; 
+        }
+    }
+    return Graph::Bend();
+}
+
+bool Graph::hasNext( Graph::Bend bend)
+{ return hasNext(bend.b, bend.c); }
+
+int Graph::filamentLength(int fi)
+{
+    int l=0; 
+
+    // find the bend object of vertex filaments[fi]
+    // that has filament index fi
+    int viStart = filaments[fi];
+    Graph::Bend startBend;
+    for(std::vector<int>::size_type i = 0; i < vertices[viStart].bends.size(); ++i) {
+        if( vertices[viStart].bends[i].fIndex == fi ) {
+            startBend = vertices[viStart].bends[i]; 
+            break;
+        }
+    } 
+    Graph::Bend currentBend = startBend;
+    do {
+        currentBend = nextBend(currentBend);
+        ++l;
+    }while( currentBend.fIndex == -1 and currentBend.c != startBend.b );
+
+    return l;
+}
 
 void Graph::Vertex::addAdj(int vi)
 {
@@ -173,7 +228,6 @@ void Graph::showBends() const
         std::cout << std::endl;
     }
 }
-
 
 void Graph::addBend(int vi, int viPrev, int viNext, int fIndex) 
 { vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, fIndex) ); }

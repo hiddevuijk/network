@@ -13,9 +13,11 @@ using namespace std;
 
 int main()
 {
-    int Nx = 10;
+    int Nx = 11;
     int Ny = 10;
     int Lx = 4;
+
+
 
     Graph g = generateNetwork(Nx,Ny,Lx);
 
