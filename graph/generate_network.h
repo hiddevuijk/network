@@ -89,6 +89,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         graph.addEdge( vi, viNeighborSW(xi,yi, Nx, Ny));
     }}
 
+
     // add bends / filaments
     int v0;
     int filament_index = 0; 
@@ -154,21 +155,11 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     }
        
 
-    // cut filaments such that every filament is smaller than the system size        
-    // the first cut does not result in a new filament
-    // subsequent cuts result in a new filament if both sides of the cut are
-    // at least two vertices long
-    //int viStart;
-    //int filamentLength;
-    //for(std::vector<int>::size_type fi=0;fi<graph.filaments.size(); ++fi ) {
-    //    viStart = graph.filaments[fi]; 
-
-
-    //}
-
-
    return graph;
 
 }
+
+
+
 
 #endif

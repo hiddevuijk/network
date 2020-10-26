@@ -30,14 +30,14 @@ class Graph
     }
 
     void deleteEdge(int i, int j);
-
+    void exchangeVertices(int i,int j);
     void addVertex() {
         vertices.push_back( Vertex(Nv) );
         ++Nv;
     }
 
     void deleteVertex(int i);
-
+    int Nneighbours (int i) const { return vertices[i].Nneighbours(); } 
   //private:
 
     class Bend {
@@ -64,6 +64,7 @@ class Graph
 
         void set_index(int i) { index = i; }
         void addAdj(int vi);
+        int Nneighbours() const { return adj.size(); }
 
         std::vector<int> adj;
         std::vector<Bend> bends;
@@ -174,16 +175,30 @@ void Graph::deleteEdge(int i, int j)
         vertices[j].adj.erase(it);
     }
 
+    // remove bends with this edge 
+
+
+    // // delete bends involving this vertex
+    //std::vector<Bend>::iterator it; 
+    //// ni is the index iof a neighbour of vertex i
+    //// vni is the vertex index of ni
+    //int vni;
+    //for( std::vector<int>::size_type  ni = 0;  ni < vertices[i].adj.size(); ++ni ){
+    //    vni = vertices[i].adj[ni]; 
+    //    // it iterates over the bends of vertex 
+    //    it = vertices[vni].bends.begin();
+    //    while( it != vertices[vni].bends.end() ) {
+    //        if( it->a == i or it->c == i ){
+    //            vertices[vni].bends.erase(it);
+    //            break;
+    //        }
+    //        ++it;
+    //    }
+    //}
 }
 
-void Graph::deleteVertex(int i)
+void Graph:exchangeVertices(int i, int j)
 {
-    // delete all edge connected to vertex i
-    while( vertices[i].adj.size() > 0 ) {
-        deleteEdge(i, vertices[i].adj[0] );
-    }
-
-    int viLast = vertices.size() - 1; // index of the last vertex
     // change the index of the last vertex to i
     vertices[i] = vertices[viLast];
     vertices[i].index = i;
@@ -198,8 +213,25 @@ void Graph::deleteVertex(int i)
         *it = i;
     }
 
+    // bends
+}
+
+
+void Graph::deleteVertex(int i)
+{
+   
+    // delete all edge connected to vertex i
+    while( vertices[i].adj.size() > 0 ) {
+        deleteEdge(i, vertices[i].adj[0] );
+    }
+
+    int viLast = vertices.size() - 1; // index of the last vertex
+
+    // exchange the indeces of vertex i and the last vertex
+    exchangeVertices(i, viLast);   
+    
     // remove last vertex
-    vertices.erase( vertices.end() - 1 );
+    vertices.erase( viLast );
     Nv -= 1;
 }
 
