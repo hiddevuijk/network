@@ -66,8 +66,8 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
 {
     long int seed = 123456789;
     boost::random::mt19937 rng(seed);
-    boost::random::uniform_int_distribution<int> randX(2,Nx-1);
-    boost::random::uniform_int_distribution<int> randY(2,Ny-1);
+    boost::random::uniform_int_distribution<int> randX(1,Nx-1);
+    boost::random::uniform_int_distribution<int> randY(1,Ny-1);
 
     // Ny must be even!!
 
@@ -160,8 +160,8 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     // at least two vertices long
     //int viStart;
     //int filamentLength;
-    //for(int fi=0;fi<graph.filaments.size(); ++fi ) {
-     //   viStart = graph.filaments[fi]; 
+    //for(std::vector<int>::size_type fi=0;fi<graph.filaments.size(); ++fi ) {
+    //    viStart = graph.filaments[fi]; 
 
 
     //}
