@@ -40,7 +40,9 @@ class Graph
     int Nneighbours (int i) const { return vertices[i].Nneighbours(); } 
   //private:
 
+
     class Bend {
+        // bend triplet a-b-c
       public:
         Bend(): a(-1), b(-1), c(-1), fIndex(-1) {}
 
@@ -52,6 +54,7 @@ class Graph
         double theta0;
         int fIndex;
     };
+
     void addBend(int vi, int viPrev, int viNext, int fIndex);
 
     class Vertex {
@@ -84,7 +87,11 @@ class Graph
 // check if vertex c has a bend with b->c->*
 bool Graph::hasNext(int b, int c)
 {
-    for(std::vector<Bend>::size_type bendI=0;bendI< vertices[b].bends.size(); ++bendI) {
+
+    // loop over all bend with b
+    for(std::vector<Bend>::size_type bendI=0;
+        bendI< vertices[b].bends.size();  ++bendI) {
+
         if( vertices[b].bends[bendI].a == b
            and vertices[b].bends[bendI].b == c) return true;
     }
