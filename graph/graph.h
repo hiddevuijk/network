@@ -66,7 +66,8 @@ class Graph
     void addBend(int vi, int viPrev, int viNext, Graph::Bend *prevBend, Graph::Bend *nextBend);
     void addBend(int vi, int viPrev, int viNext);
     
-    void deleteBend( Bend bend);
+    void deleteBend( Bend& bend);
+    void polymerize( Graph::Bend& b1, Graph::Bend& b2);
 
     class Vertex {
       public:
@@ -266,10 +267,12 @@ void Graph::exchangeVertices(int i, int j)
     }
 }
 
+void Graph::polymerize( Graph::Bend& b1, Graph::Bend& b2)
+{
+}
 
 
-
-void Graph::deleteBend( Graph::Bend bend)
+void Graph::deleteBend( Graph::Bend& bend)
 {
 
     if( bend.prevBend != nullptr) bend.prevBend->nextBend = nullptr;
@@ -286,7 +289,8 @@ void Graph::deleteBend( Graph::Bend bend)
     }
 
     
-    vertices[bend.I].bends.erase(  vertices[bend.I].bends.end() - 1 );
+    //vertices[bend.I].bends.erase(  vertices[bend.I].bends.end() - 1 );
+    vertices[bend.I].bends.pop_back();
 
 }
 

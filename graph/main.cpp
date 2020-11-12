@@ -32,19 +32,14 @@ int main()
     g.vertices[0].bends[0].nextBend = &g.vertices[4].bends[0];
     g.vertices[4].bends[0].prevBend = &g.vertices[0].bends[0];
     
-    cout << g.vertices[0].bends[0].nextBend->I << endl;
-    cout << g.vertices[4].bends[0].prevBend->I << endl;
+    g.showBends(); 
     cout << endl;
-       
+
+    g.deleteBend( g.vertices[4].bends[0] );
+
+    g.showBends(); 
+    cout << endl;
  
-    //g.exchangeVertices(1,2);
-    //g.exchangeVertices(0,3);
-    //g.exchangeVertices(2,4);
-
-
-    cout << g.vertices[0].bends[0].nextBend->I << endl;
-    cout << g.vertices[4].bends[0].prevBend->I << endl;
-    cout << endl;
        
 
     return 0;
