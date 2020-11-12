@@ -122,6 +122,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
        
         graph.filaments.push_back(vi);
         graph.addBend(vi, viPrev, viNext, filament_index);
+        graph.fils.push_back( &graph.vertices[vi].bends.back() );
         while( viNext != v0 ) {
             viPrev = vi;
             vi = viNext;

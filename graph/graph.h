@@ -36,6 +36,8 @@ class Graph
         ++Nv;
     }
 
+    void setFilamentOrigin(int fi);
+
     void deleteVertex(int i);
     int Nneighbours (int i) const { return vertices[i].Nneighbours(); } 
   //private:
@@ -75,60 +77,94 @@ class Graph
   
     // return length of filament i
     int filamentLength(int fi);
-    bool hasNext(int b, int c);
-    bool hasNext( Graph::Bend bend);
-    Graph::Bend nextBend( Graph::Bend bend);
+    bool isBendNext(int b, int c); // true if bend b-c-* exists
+    bool isBendPrev(int b, int c); // true if bend *-b*c exists
+    bool hasNext( Graph::Bend bend); // true if bend.c has bend bend.b-bend.c-*
+    bool hasPrev( Graph::Bend bend); // ture if bend.a has bend *-bend.a - bend.b
+    Graph::Bend nextBend( Graph::Bend bend); // return next bend
+    Graph::Bend prevBend( Graph::Bend bend); // return previous bend
 
-    int Nv;
+    int Nv; // number ov vertices
     std::vector<Vertex> vertices;
-    std::vector<int> filaments;
+    std::vector<int> filaments; // index of vertex in filament
+    std::vector<Bend*> fils; // bend in a filament
 };
 
-// check if vertex c has a bend with b->c->*
-bool Graph::hasNext(int b, int c)
+// check if vertex b has a bend with a->b->*
+bool Graph::isBendNext(int a, int b)
 {
 
-    // loop over all bend with b
-    for(std::vector<Bend>::size_type bendI=0;
-        bendI< vertices[b].bends.size();  ++bendI) {
-
-        if( vertices[b].bends[bendI].a == b
-           and vertices[b].bends[bendI].b == c) return true;
+    // loop over all bend with b in the middle
+    std::vector<Graph::Bend>::iterator it = vertices[b].bends.begin();
+    while( it != vertices[b].bends.end() ) {
+        if( it->a == a) return true;
+        ++it;
     }
 
     return false;
 }
 
+// check if vertex  b has a bend with *-b-c
+bool Graph::isBendPrev(int b, int c)
+{
+
+    // loop over all bend with b in the middle
+    std::vector<Graph::Bend>::iterator it = vertices[b].bends.begin();
+    while( it != vertices[b].bends.end() ) {
+        if( it->c == c) return true;
+        ++it;
+    }
+
+    return false;
+}
+
+
 Graph::Bend Graph::nextBend( Graph::Bend bend)
 {
-    for( std::vector<Graph::Bend>::size_type bi=0;
-        bi < vertices[bend.c].bends.size(); ++ bi ) {
-
-        if( vertices[bend.c].bends[bi].fIndex == bend.fIndex ) {
-            return vertices[bend.c].bends[bi]; 
-        }
+    std::vector<Graph::Bend>::iterator it = vertices[bend.c].bends.begin();
+    while( it != vertices[bend.c].bends.end() ) {
+        if( it->fIndex == bend.fIndex ) return *it;
+        ++it;
     }
+
+    return Graph::Bend();
+}
+
+Graph::Bend Graph::prevBend( Graph::Bend bend)
+{
+    std::vector<Graph::Bend>::iterator it = vertices[bend.a].bends.begin();
+    while( it != vertices[bend.a].bends.end() ) {
+        if( it->fIndex == bend.fIndex ) return *it;
+        ++it;
+    }
+
     return Graph::Bend();
 }
 
 bool Graph::hasNext( Graph::Bend bend)
-{ return hasNext(bend.b, bend.c); }
+{ return isBendNext(bend.b, bend.c); }
+
+bool Graph::hasPrev( Graph::Bend bend)
+{ return isBendPrev(bend.a, bend.b); }
 
 int Graph::filamentLength(int fi)
 {
-    int l=0; 
 
     // find the bend object of vertex filaments[fi]
     // that has filament index fi
-    int viStart = filaments[fi];
-    Graph::Bend startBend;
-    for(std::vector<int>::size_type i = 0; i < vertices[viStart].bends.size(); ++i) {
-        if( vertices[viStart].bends[i].fIndex == fi ) {
-            startBend = vertices[viStart].bends[i]; 
-            break;
-        }
-    } 
+    //int viStart = filaments[fi];
+    //Graph::Bend startBend;
+    //std::vector<Graph::Bend>::iterator it = vertices[viStart].bends.begin();
+    //while( it !=  vertices[viStart].bends.end() ) {
+    //    if( it->fIndex == fi ) {
+    //        startBend = *it;
+    //        break;
+    //    }
+    //    ++it;
+    //}
+    Graph::Bend startBend = *fils[fi];
     Graph::Bend currentBend = startBend;
+    int l=0; 
     do {
         currentBend = nextBend(currentBend);
         ++l;
@@ -204,23 +240,23 @@ void Graph::deleteEdge(int i, int j)
     //}
 }
 
-void Graph:exchangeVertices(int i, int j)
+void Graph::exchangeVertices(int i, int j)
 {
-    // change the index of the last vertex to i
-    vertices[i] = vertices[viLast];
-    vertices[i].index = i;
+    //// change the index of the last vertex to i
+    //vertices[i] = vertices[viLast];
+    //vertices[i].index = i;
 
-    // change connection to vertex viLast to vertex i
-    // ai is the index in the adj list of vertex i
-    for(std::vector<int>::size_type ai=0; ai<vertices[i].adj.size(); ++ai ) {
-        // vi_ai is the vertex to which vertex i is connected
-        // change the edge vi_ai <-> viLast to vi_ai <-> i
-        int vi_ai = vertices[i].adj[ai];
-        std::vector<int>::iterator it = std::find( vertices[vi_ai].adj.begin(), vertices[vi_ai].adj.end(), viLast);
-        *it = i;
-    }
+    //// change connection to vertex viLast to vertex i
+    //// ai is the index in the adj list of vertex i
+    //for(std::vector<int>::size_type ai=0; ai<vertices[i].adj.size(); ++ai ) {
+    //    // vi_ai is the vertex to which vertex i is connected
+    //    // change the edge vi_ai <-> viLast to vi_ai <-> i
+    //    int vi_ai = vertices[i].adj[ai];
+    //    std::vector<int>::iterator it = std::find( vertices[vi_ai].adj.begin(), vertices[vi_ai].adj.end(), viLast);
+    //    *it = i;
+    //}
 
-    // bends
+    //// bends
 }
 
 
@@ -238,7 +274,7 @@ void Graph::deleteVertex(int i)
     exchangeVertices(i, viLast);   
     
     // remove last vertex
-    vertices.erase( viLast );
+    //vertices.erase( viLast );
     Nv -= 1;
 }
 
@@ -270,5 +306,35 @@ void Graph::showBends() const
 
 void Graph::addBend(int vi, int viPrev, int viNext, int fIndex) 
 { vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, fIndex) ); }
+
+void Graph::setFilamentOrigin( int fi )
+{
+
+    /* 
+    // find the bend object of vertex filaments[fi]
+    // that has filament index fi
+    int viStart = filaments[fi];
+    Graph::Bend startBend;
+    std::vector<Graph::Bend>::iterator it = vertices[viStart].bends.begin();
+    while( it !=  vertices[viStart].bends.end() ) {
+        if( it->fIndex == fi ) {
+            startBend = *it;
+            break;
+        }
+        ++it;
+    }
+
+    Graph::Bend currentBend = startBend;
+    while( hasBendPrev(currentBend )  ){
+        currentBend = prevBend( currentBend);
+    }
+    do {
+        currentBend = prevBend(currentBend);
+    }while( currentBend.fIndex == -1 and currentBend.c != startBend.b );
+
+       
+    */
+
+}
 
 #endif
