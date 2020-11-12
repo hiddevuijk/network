@@ -77,8 +77,6 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
 
     double dx = Lx/Nx;
     double dy = dx*std::sqrt(3./4.);
-    //double dy = std::sqrt(1 - 0.25*dx*dx);
-    //double Ly = Ny*dy;
 
     int vi; 
     for(int xi=0; xi<Nx; ++xi) {
@@ -91,10 +89,9 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     }}
 
 
-    // add bends / filaments
+    // add bends 
     int v0;
-    int filament_index = 0; 
-    //int viPrev;
+    int viPrev;
     int viNext;
 
     // add W-E bends
@@ -105,38 +102,43 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
 
         for(int xi = 0; xi < Nx; ++xi ) {
             vi = xy2v(xi,yi,Nx,Ny); 
-            //viPrev = viNeighborW(xi,yi,Nx,Ny);
+            viPrev = viNeighborW(xi,yi,Nx,Ny);
             viNext = viNeighborE(xi,yi,Nx,Ny);
-            //graph.addBend(vi, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext);
         } 
-        filament_index += 1;
+        for(int xi=0; xi<Nx; ++xi ) {
+            vi = xy2v(xi,yi,Nx,Ny); 
+            viNext = viNeighborE(xi,yi,Nx,Ny);
+            graph.polymerize(vi, viNext);
+        }
     }
 
     // add SW-NE bends
     for(int xi=0; xi<Nx; ++xi ) {
         v0 = xy2v(xi,0,Nx,Ny);
         vi = v0;
-        //viPrev = viNeighborSW(vi,Nx,Ny);  
+        viPrev = viNeighborSW(vi,Nx,Ny);  
         viNext = viNeighborNE(vi,Nx,Ny);  
         // check if it already exists 
         // if it exists it is the  last one added
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().next == viNext ) break;
        
-        //graph.addBend(vi, viPrev, viNext, filament_index);
+        graph.addBend(vi, viPrev, viNext);
         while( viNext != v0 ) {
-            //viPrev = vi;
+            viPrev = vi;
             vi = viNext;
             viNext = viNeighborNE(vi,Nx,Ny);  
-            //graph.addBend(vi, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext);
         } 
+        
+            
 
-        filament_index += 1;
     }
     // add SE-NW bends    
     for(int xi=0; xi<Nx; ++xi) {
         v0 = xy2v(xi,0,Nx,Ny);
         vi = v0;
-        //viPrev = viNeighborSE(vi,Nx,Ny);
+        viPrev = viNeighborSE(vi,Nx,Ny);
         viNext = viNeighborNW(vi,Nx,Ny);
 
         // check if it already exists 
@@ -144,12 +146,12 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().next == viNext ) break;
 
         // add a filament that starts at vi to the filament list
-        //graph.addBend(vi, viPrev, viNext, filament_index);
+        graph.addBend(vi, viPrev, viNext);
         while(viNext != v0) {
-            //viPrev = vi;
+            viPrev = vi;
             vi = viNext;
             viNext = viNeighborNW(vi,Nx,Ny);
-            //graph.addBend(vi, viPrev, viNext, filament_index);
+            graph.addBend(vi, viPrev, viNext);
         }
     }
        

@@ -168,7 +168,6 @@ void Graph::deleteEdge(int i, int j)
         vertices[j].adj.erase(it);
     }
 
-    // remove bends with this edge 
     
 
 }
