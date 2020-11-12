@@ -29,6 +29,7 @@ class Graph
         vertices[j].addAdj(i);
     }
 
+    bool checkEdge(int i, int j);
     void deleteEdge(int i, int j);
     void exchangeVertices(int i,int j);
     void addVertex() {
@@ -47,9 +48,14 @@ class Graph
       public:
         Bend(): I(-1), prev(-1), next(-1), prevBend(nullptr), nextBend(nullptr) {}
 
+        Bend(int I, int prev, int next) 
+            : I(I), prev(prev), next(next), prevBend(nullptr), nextBend(nullptr) {}
+
         Bend( int I, int prev, int next, Bend *prevBend, Bend *nextBend)
             : I(I), prev(prev), next(next), prevBend(prevBend), nextBend(nextBend) {}
 
+
+        bool operator==( const Bend& rhs) { return this == &rhs; }
         int I;
         int prev, next;
         Bend *prevBend;
@@ -58,6 +64,9 @@ class Graph
     };
 
     void addBend(int vi, int viPrev, int viNext, Graph::Bend *prevBend, Graph::Bend *nextBend);
+    void addBend(int vi, int viPrev, int viNext);
+    
+    void deleteBend( Bend bend);
 
     class Vertex {
       public:
@@ -66,6 +75,8 @@ class Graph
 
         int index;
         double x,y;
+
+
 
         void set_index(int i) { index = i; }
         void addAdj(int vi);
@@ -124,6 +135,9 @@ Graph::Graph( std::ifstream& in)
 }
 
 
+bool Graph::checkEdge(int i, int j) 
+{ return std::find( vertices[i].adj.begin(), vertices[i].adj.end(), j  ) != vertices[i].adj.end(); }
+
 void Graph::deleteEdge(int i, int j)
 {
     std::vector<int>::iterator it =  std::find( vertices[i].adj.begin(), vertices[i].adj.end(), j);
@@ -159,21 +173,121 @@ void Graph::deleteEdge(int i, int j)
 
 void Graph::exchangeVertices(int i, int j)
 {
-    //// change the index of the last vertex to i
-    //vertices[i] = vertices[viLast];
-    //vertices[i].index = i;
+    if( i == j ) return;
+    bool connected = checkEdge(i,j);
+    
+    Vertex vi = vertices[i]; 
+    Vertex vj = vertices[j];
 
-    //// change connection to vertex viLast to vertex i
-    //// ai is the index in the adj list of vertex i
-    //for(std::vector<int>::size_type ai=0; ai<vertices[i].adj.size(); ++ai ) {
-    //    // vi_ai is the vertex to which vertex i is connected
-    //    // change the edge vi_ai <-> viLast to vi_ai <-> i
-    //    int vi_ai = vertices[i].adj[ai];
-    //    std::vector<int>::iterator it = std::find( vertices[vi_ai].adj.begin(), vertices[vi_ai].adj.end(), viLast);
-    //    *it = i;
-    //}
+    vertices[i] = vj;
+    vertices[i].index = i;
+    vertices[j] = vi;
+    vertices[j].index = j;
 
-    //// bends
+    // fix adjacencies in adj of the adjacent vertices
+    std::vector<int>::iterator it = vi.adj.begin();
+    while( it != vi.adj.end() ) {
+        *std::find( vertices[*it].adj.begin(), vertices[*it].adj.end(), i) = j;
+        ++it;
+    }
+    
+    it = vj.adj.begin();
+    while( it != vj.adj.end() ) {
+        *std::find( vertices[*it].adj.begin(), vertices[*it].adj.end(), j) = i;
+        ++it;
+    }
+
+    // if i and j connected they have self connections
+    // change i -> i to i -> j and j->j to j->i
+    if(connected) {
+        *std::find( vertices[i].adj.begin(), vertices[i].adj.end(), i ) = j;
+        *std::find( vertices[j].adj.begin(), vertices[j].adj.end(), j ) = i;
+    }
+
+    // fix bends
+    
+
+    // fix bends
+    // loop over all edges of i, if the connected vertex has a bend with prev or next is j
+    // change to i 
+    std::vector<Bend>::iterator it_bend;
+    it = vertices[i].adj.begin();
+
+    while( it != vertices[i].adj.end() ){
+        it_bend = vertices[*it].bends.begin();
+        while( it_bend != vertices[*it].bends.end() ) {
+            if( it_bend->prev == i ) it_bend->prev = j;
+            if( it_bend->next == i ) it_bend->next = j;
+            if( it_bend->prev == j ) it_bend->prev = i;
+            if( it_bend->next == j ) it_bend->next = i;
+            ++it_bend;
+        } 
+        ++it;
+    }
+    it = vertices[j].adj.begin();
+    while( it != vertices[j].adj.end() ){
+        it_bend = vertices[*it].bends.begin();
+        // if thie vertex has already been visited, skip it
+        if( !checkEdge(i,*it) ) {
+            while( it_bend != vertices[*it].bends.end() ) {
+                if( it_bend->prev == j ) it_bend->prev = i;
+                if( it_bend->next == j ) it_bend->next = i;
+                if( it_bend->prev == i ) it_bend->prev = j;
+                if( it_bend->next == i ) it_bend->next = j;
+                ++it_bend;
+            } 
+        }
+        ++it;
+    }
+
+    // fix pointers to prev and next bends
+    it_bend = vertices[i].bends.begin(); 
+    while( it_bend != vertices[i].bends.end() ) {
+        if( it_bend->nextBend != nullptr ) {
+            it_bend->nextBend->prevBend->nextBend = nullptr;
+            it_bend->nextBend->prevBend = &(*it_bend);
+        }
+        if( it_bend->prevBend != nullptr ) {
+            it_bend->prevBend->nextBend->prevBend = nullptr;
+            it_bend->prevBend->nextBend = &(*it_bend);
+        }
+        ++it_bend;
+    }
+
+    it_bend = vertices[j].bends.begin(); 
+    while( it_bend != vertices[j].bends.end() ) {
+        if( it_bend->nextBend != nullptr ) {
+            it_bend->nextBend->prevBend = &(*it_bend);
+        }
+        if( it_bend->prevBend != nullptr ) {
+            it_bend->prevBend->nextBend = &(*it_bend);
+        }
+        ++it_bend;
+    }
+}
+
+
+
+
+void Graph::deleteBend( Graph::Bend bend)
+{
+
+    if( bend.prevBend != nullptr) bend.prevBend->nextBend = nullptr;
+    bend.prevBend = nullptr;
+    if( bend.nextBend != nullptr) bend.nextBend->prevBend = nullptr;
+    bend.nextBend = nullptr;
+
+    if( vertices[bend.I].bends.size() > 1 ) {
+        std::vector<Bend>::iterator it = std::find( vertices[bend.I].bends.begin(), vertices[bend.I].bends.end(), bend );
+        *it = vertices[bend.I].bends.back();
+        if( it->prevBend != nullptr ) it->prevBend->nextBend = &(*it);     
+        if( it->nextBend != nullptr ) it->nextBend->prevBend = &(*it);     
+
+    }
+
+    
+    vertices[bend.I].bends.erase(  vertices[bend.I].bends.end() - 1 );
+
 }
 
 
@@ -184,6 +298,8 @@ void Graph::deleteVertex(int i)
     while( vertices[i].adj.size() > 0 ) {
         deleteEdge(i, vertices[i].adj[0] );
     }
+
+    // delete all bends from this and adj objects
 
     int viLast = vertices.size() - 1; // index of the last vertex
 
@@ -222,5 +338,8 @@ void Graph::showBends() const
 
 void Graph::addBend(int vi, int viPrev, int viNext, Graph::Bend *prevBend, Graph::Bend *nextBend) 
 { vertices[vi].bends.push_back( Graph::Bend(vi, viPrev,  viNext, prevBend, nextBend) ); }
+
+void Graph::addBend(int vi, int viPrev, int viNext) 
+{ vertices[vi].bends.push_back( Graph::Bend(vi, viPrev,  viNext) ); }
 
 #endif

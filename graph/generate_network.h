@@ -94,7 +94,8 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     // add bends / filaments
     int v0;
     int filament_index = 0; 
-    int viPrev, viNext;
+    //int viPrev;
+    int viNext;
 
     // add W-E bends
     for(int yi =0; yi < Ny; ++yi ){
@@ -104,7 +105,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
 
         for(int xi = 0; xi < Nx; ++xi ) {
             vi = xy2v(xi,yi,Nx,Ny); 
-            viPrev = viNeighborW(xi,yi,Nx,Ny);
+            //viPrev = viNeighborW(xi,yi,Nx,Ny);
             viNext = viNeighborE(xi,yi,Nx,Ny);
             //graph.addBend(vi, viPrev, viNext, filament_index);
         } 
@@ -115,7 +116,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     for(int xi=0; xi<Nx; ++xi ) {
         v0 = xy2v(xi,0,Nx,Ny);
         vi = v0;
-        viPrev = viNeighborSW(vi,Nx,Ny);  
+        //viPrev = viNeighborSW(vi,Nx,Ny);  
         viNext = viNeighborNE(vi,Nx,Ny);  
         // check if it already exists 
         // if it exists it is the  last one added
@@ -123,7 +124,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
        
         //graph.addBend(vi, viPrev, viNext, filament_index);
         while( viNext != v0 ) {
-            viPrev = vi;
+            //viPrev = vi;
             vi = viNext;
             viNext = viNeighborNE(vi,Nx,Ny);  
             //graph.addBend(vi, viPrev, viNext, filament_index);
@@ -135,7 +136,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     for(int xi=0; xi<Nx; ++xi) {
         v0 = xy2v(xi,0,Nx,Ny);
         vi = v0;
-        viPrev = viNeighborSE(vi,Nx,Ny);
+        //viPrev = viNeighborSE(vi,Nx,Ny);
         viNext = viNeighborNW(vi,Nx,Ny);
 
         // check if it already exists 
@@ -145,7 +146,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         // add a filament that starts at vi to the filament list
         //graph.addBend(vi, viPrev, viNext, filament_index);
         while(viNext != v0) {
-            viPrev = vi;
+            //viPrev = vi;
             vi = viNext;
             viNext = viNeighborNW(vi,Nx,Ny);
             //graph.addBend(vi, viPrev, viNext, filament_index);
