@@ -30,15 +30,8 @@ int main()
     g.addBend(0,1,4);
     g.addBend(4,0,2);
 
-    
-    g.showBends(); 
-    cout << endl;
+    g.polymerize(0,4);
 
-    g.deleteVertex(1); 
-    g.showBends(); 
-    cout << endl;
- 
-       
 
     return 0;
 }

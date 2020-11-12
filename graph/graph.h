@@ -68,6 +68,7 @@ class Graph
     
     void deleteBend( Bend& bend);
     void polymerize( Graph::Bend& b1, Graph::Bend& b2);
+    void polymerize( int i, int j );
 
     class Vertex {
       public:
@@ -269,8 +270,30 @@ void Graph::exchangeVertices(int i, int j)
 
 void Graph::polymerize( Graph::Bend& b1, Graph::Bend& b2)
 {
+    b1.nextBend = &b2;
+    b2.prevBend = &b1;
 }
 
+void Graph::polymerize( int i, int j)
+{
+
+    // find bend * - i - j
+    std::vector<Bend>::iterator it_b1 = vertices[i].bends.begin();
+    while( it_b1->next != j ){
+         ++it_b1;
+        if( it_b1 == vertices[i].bends.end() ) std::cout << "error 1\n";
+    }
+
+    // find bned i-j-*
+    std::vector<Bend>::iterator it_b2 = vertices[j].bends.begin();
+    while( it_b2->prev != i ) {
+        ++it_b2;
+        if( it_b2 == vertices[j].bends.end() ) std::cout << "error 2\n";
+    }
+
+    polymerize( *it_b1, *it_b2);
+
+}
 
 void Graph::deleteBend( Graph::Bend& bend)
 {
