@@ -76,7 +76,8 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     Graph graph(Nv);
 
     double dx = Lx/Nx;
-    double dy = std::sqrt(1 - 0.25*dx*dx);
+    double dy = dx*std::sqrt(3./4.);
+    //double dy = std::sqrt(1 - 0.25*dx*dx);
     //double Ly = Ny*dy;
 
     int vi; 
@@ -99,7 +100,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
     for(int yi =0; yi < Ny; ++yi ){
         // filament starts at vi
         vi = xy2v(0,yi,Nx,Ny); 
-        graph.filaments.push_back(vi);
+    
 
         for(int xi = 0; xi < Nx; ++xi ) {
             vi = xy2v(xi,yi,Nx,Ny); 
@@ -120,9 +121,7 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         // if it exists it is the  last one added
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().c == viNext ) break;
        
-        graph.filaments.push_back(vi);
         graph.addBend(vi, viPrev, viNext, filament_index);
-        graph.fils.push_back( &graph.vertices[vi].bends.back() );
         while( viNext != v0 ) {
             viPrev = vi;
             vi = viNext;
@@ -144,7 +143,6 @@ Graph generateNetwork(int Nx, int Ny, double Lx)
         if( graph.vertices[vi].bends.size() > 0 and graph.vertices[vi].bends.back().c == viNext ) break;
 
         // add a filament that starts at vi to the filament list
-        graph.filaments.push_back(vi);
         graph.addBend(vi, viPrev, viNext, filament_index);
         while(viNext != v0) {
             viPrev = vi;

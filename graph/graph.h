@@ -36,7 +36,6 @@ class Graph
         ++Nv;
     }
 
-    void setFilamentOrigin(int fi);
 
     void deleteVertex(int i);
     int Nneighbours (int i) const { return vertices[i].Nneighbours(); } 
@@ -75,8 +74,6 @@ class Graph
         std::vector<Bend> bends;
     };
   
-    // return length of filament i
-    int filamentLength(int fi);
     bool isBendNext(int b, int c); // true if bend b-c-* exists
     bool isBendPrev(int b, int c); // true if bend *-b*c exists
     bool hasNext( Graph::Bend bend); // true if bend.c has bend bend.b-bend.c-*
@@ -86,8 +83,6 @@ class Graph
 
     int Nv; // number ov vertices
     std::vector<Vertex> vertices;
-    std::vector<int> filaments; // index of vertex in filament
-    std::vector<Bend*> fils; // bend in a filament
 };
 
 // check if vertex b has a bend with a->b->*
@@ -146,32 +141,6 @@ bool Graph::hasNext( Graph::Bend bend)
 
 bool Graph::hasPrev( Graph::Bend bend)
 { return isBendPrev(bend.a, bend.b); }
-
-int Graph::filamentLength(int fi)
-{
-
-    // find the bend object of vertex filaments[fi]
-    // that has filament index fi
-    //int viStart = filaments[fi];
-    //Graph::Bend startBend;
-    //std::vector<Graph::Bend>::iterator it = vertices[viStart].bends.begin();
-    //while( it !=  vertices[viStart].bends.end() ) {
-    //    if( it->fIndex == fi ) {
-    //        startBend = *it;
-    //        break;
-    //    }
-    //    ++it;
-    //}
-    Graph::Bend startBend = *fils[fi];
-    Graph::Bend currentBend = startBend;
-    int l=0; 
-    do {
-        currentBend = nextBend(currentBend);
-        ++l;
-    }while( currentBend.fIndex == -1 and currentBend.c != startBend.b );
-
-    return l;
-}
 
 void Graph::Vertex::addAdj(int vi)
 {
@@ -306,35 +275,5 @@ void Graph::showBends() const
 
 void Graph::addBend(int vi, int viPrev, int viNext, int fIndex) 
 { vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, fIndex) ); }
-
-void Graph::setFilamentOrigin( int fi )
-{
-
-    /* 
-    // find the bend object of vertex filaments[fi]
-    // that has filament index fi
-    int viStart = filaments[fi];
-    Graph::Bend startBend;
-    std::vector<Graph::Bend>::iterator it = vertices[viStart].bends.begin();
-    while( it !=  vertices[viStart].bends.end() ) {
-        if( it->fIndex == fi ) {
-            startBend = *it;
-            break;
-        }
-        ++it;
-    }
-
-    Graph::Bend currentBend = startBend;
-    while( hasBendPrev(currentBend )  ){
-        currentBend = prevBend( currentBend);
-    }
-    do {
-        currentBend = prevBend(currentBend);
-    }while( currentBend.fIndex == -1 and currentBend.c != startBend.b );
-
-       
-    */
-
-}
 
 #endif
