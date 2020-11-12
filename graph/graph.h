@@ -43,20 +43,21 @@ class Graph
 
 
     class Bend {
-        // bend triplet a-b-c
+        // bend triplet prev-I-next
       public:
-        Bend(): a(-1), b(-1), c(-1), fIndex(-1) {}
+        Bend(): I(-1), prev(-1), next(-1), prevBend(nullptr), nextBend(nullptr) {}
 
-        Bend(int a, int b, int c, int fIndex)
-            : a(a), b(b), c(c), fIndex(fIndex)
-            {}
+        Bend( int I, int prev, int next, Bend *prevBend, Bend *nextBend)
+            : I(I), prev(prev), next(next), prevBend(prevBend), nextBend(nextBend) {}
 
-        int a,b,c;
+        int I;
+        int prev, next;
+        Bend *prevBend;
+        Bend *nextBend;
         double theta0;
-        int fIndex;
     };
 
-    void addBend(int vi, int viPrev, int viNext, int fIndex);
+    void addBend(int vi, int viPrev, int viNext, Graph::Bend *prevBend, Graph::Bend *nextBend);
 
     class Vertex {
       public:
@@ -74,73 +75,20 @@ class Graph
         std::vector<Bend> bends;
     };
   
-    bool isBendNext(int b, int c); // true if bend b-c-* exists
-    bool isBendPrev(int b, int c); // true if bend *-b*c exists
-    bool hasNext( Graph::Bend bend); // true if bend.c has bend bend.b-bend.c-*
-    bool hasPrev( Graph::Bend bend); // ture if bend.a has bend *-bend.a - bend.b
-    Graph::Bend nextBend( Graph::Bend bend); // return next bend
-    Graph::Bend prevBend( Graph::Bend bend); // return previous bend
+    Graph::Bend* nextBend( Graph::Bend bend); // return next bend
+    Graph::Bend* prevBend( Graph::Bend bend); // return previous bend
 
     int Nv; // number ov vertices
     std::vector<Vertex> vertices;
 };
 
-// check if vertex b has a bend with a->b->*
-bool Graph::isBendNext(int a, int b)
-{
 
-    // loop over all bend with b in the middle
-    std::vector<Graph::Bend>::iterator it = vertices[b].bends.begin();
-    while( it != vertices[b].bends.end() ) {
-        if( it->a == a) return true;
-        ++it;
-    }
+Graph::Bend* Graph::nextBend( Graph::Bend bend)
+{ return bend.nextBend; }
 
-    return false;
-}
+Graph::Bend* Graph::prevBend( Graph::Bend bend)
+{ return bend.prevBend; }
 
-// check if vertex  b has a bend with *-b-c
-bool Graph::isBendPrev(int b, int c)
-{
-
-    // loop over all bend with b in the middle
-    std::vector<Graph::Bend>::iterator it = vertices[b].bends.begin();
-    while( it != vertices[b].bends.end() ) {
-        if( it->c == c) return true;
-        ++it;
-    }
-
-    return false;
-}
-
-
-Graph::Bend Graph::nextBend( Graph::Bend bend)
-{
-    std::vector<Graph::Bend>::iterator it = vertices[bend.c].bends.begin();
-    while( it != vertices[bend.c].bends.end() ) {
-        if( it->fIndex == bend.fIndex ) return *it;
-        ++it;
-    }
-
-    return Graph::Bend();
-}
-
-Graph::Bend Graph::prevBend( Graph::Bend bend)
-{
-    std::vector<Graph::Bend>::iterator it = vertices[bend.a].bends.begin();
-    while( it != vertices[bend.a].bends.end() ) {
-        if( it->fIndex == bend.fIndex ) return *it;
-        ++it;
-    }
-
-    return Graph::Bend();
-}
-
-bool Graph::hasNext( Graph::Bend bend)
-{ return isBendNext(bend.b, bend.c); }
-
-bool Graph::hasPrev( Graph::Bend bend)
-{ return isBendPrev(bend.a, bend.b); }
 
 void Graph::Vertex::addAdj(int vi)
 {
@@ -265,15 +213,14 @@ void Graph::showBends() const
     for(int iv=0; iv < Nv; ++iv) {
         std::cout << iv << " :\n";
         for( std::vector<int>::size_type ib=0; ib < vertices[iv].bends.size(); ++ib ) {
-            std::cout << "\t " << vertices[iv].bends[ib].fIndex << '\t';
-            std::cout << "\t " << vertices[iv].bends[ib].a << '\t';
-            std::cout << "\t " << vertices[iv].bends[ib].c << '\n';
+            std::cout << "\t " << vertices[iv].bends[ib].prev << '\t';
+            std::cout << "\t " << vertices[iv].bends[ib].next << '\n';
         }
         std::cout << std::endl;
     }
 }
 
-void Graph::addBend(int vi, int viPrev, int viNext, int fIndex) 
-{ vertices[vi].bends.push_back( Graph::Bend(viPrev, vi, viNext, fIndex) ); }
+void Graph::addBend(int vi, int viPrev, int viNext, Graph::Bend *prevBend, Graph::Bend *nextBend) 
+{ vertices[vi].bends.push_back( Graph::Bend(vi, viPrev,  viNext, prevBend, nextBend) ); }
 
 #endif
