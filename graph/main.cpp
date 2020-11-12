@@ -29,14 +29,12 @@ int main()
 
     g.addBend(0,1,4);
     g.addBend(4,0,2);
-    g.vertices[0].bends[0].nextBend = &g.vertices[4].bends[0];
-    g.vertices[4].bends[0].prevBend = &g.vertices[0].bends[0];
+
     
     g.showBends(); 
     cout << endl;
 
-    g.deleteBend( g.vertices[4].bends[0] );
-
+    g.deleteVertex(1); 
     g.showBends(); 
     cout << endl;
  

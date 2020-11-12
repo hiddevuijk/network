@@ -141,9 +141,26 @@ bool Graph::checkEdge(int i, int j)
 
 void Graph::deleteEdge(int i, int j)
 {
-    std::vector<int>::iterator it =  std::find( vertices[i].adj.begin(), vertices[i].adj.end(), j);
+    std::vector<int>::iterator it;
+    std::vector<Bend>::iterator it_b;
+
+    // remove bends
+    it_b = vertices[i].bends.begin(); 
+    while( it_b != vertices[i].bends.end() ) {
+        if( it_b->prev == j or it_b->next == j) deleteBend( *it_b );
+        if( it_b == vertices[i].bends.end() ) break;
+        ++it_b;
+    }
+    it_b = vertices[j].bends.begin();
+    while( it_b != vertices[j].bends.end() ) {
+        if( it_b->prev == i or it_b->next == i ) deleteBend( *it_b);
+        if( it_b == vertices[j].bends.end() ) break;
+        ++it_b;
+    }
+
 
     // if edge exist, remove it from adj[i] and adj[j]
+    it = std::find( vertices[i].adj.begin(), vertices[i].adj.end(), j);
     if( it != vertices[i].adj.end() ) {
         vertices[i].adj.erase(it);
         it = std::find( vertices[j].adj.begin(), vertices[j].adj.end(), i);
@@ -151,25 +168,8 @@ void Graph::deleteEdge(int i, int j)
     }
 
     // remove bends with this edge 
+    
 
-
-    // // delete bends involving this vertex
-    //std::vector<Bend>::iterator it; 
-    //// ni is the index iof a neighbour of vertex i
-    //// vni is the vertex index of ni
-    //int vni;
-    //for( std::vector<int>::size_type  ni = 0;  ni < vertices[i].adj.size(); ++ni ){
-    //    vni = vertices[i].adj[ni]; 
-    //    // it iterates over the bends of vertex 
-    //    it = vertices[vni].bends.begin();
-    //    while( it != vertices[vni].bends.end() ) {
-    //        if( it->a == i or it->c == i ){
-    //            vertices[vni].bends.erase(it);
-    //            break;
-    //        }
-    //        ++it;
-    //    }
-    //}
 }
 
 void Graph::exchangeVertices(int i, int j)
@@ -297,13 +297,15 @@ void Graph::deleteBend( Graph::Bend& bend)
 
 void Graph::deleteVertex(int i)
 {
-   
+
+    // delete all bends with * - i - *
+    while( vertices[i].bends.size() > 0 ) deleteBend( vertices[i].bends.back() );
+  
     // delete all edge connected to vertex i
     while( vertices[i].adj.size() > 0 ) {
-        deleteEdge(i, vertices[i].adj[0] );
+        int j = vertices[i].adj[0];
+        deleteEdge(i,j);
     }
-
-    // delete all bends from this and adj objects
 
     int viLast = vertices.size() - 1; // index of the last vertex
 
@@ -311,7 +313,7 @@ void Graph::deleteVertex(int i)
     exchangeVertices(i, viLast);   
     
     // remove last vertex
-    //vertices.erase( viLast );
+    vertices.pop_back();
     Nv -= 1;
 }
 
