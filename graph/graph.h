@@ -311,7 +311,6 @@ void Graph::deleteBend( Graph::Bend& bend)
     }
 
     
-    //vertices[bend.I].bends.erase(  vertices[bend.I].bends.end() - 1 );
     vertices[bend.I].bends.pop_back();
 
 }
