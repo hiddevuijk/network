@@ -152,14 +152,14 @@ void Network::polymerize( Vertex *vi, Vertex *vj )
     //if( it_bj == vj->bends.end() ) return;
 
     // polymerize bends
-    (*it_bi)->nextBend = *it_bj;
-    (*it_bj)->prevBend = *it_bi;
+    polymerize( *it_bi, *it_bj);
     
 }
 
 void Network::polymerize( Bend *bi, Bend *bj)
 {
-
+    bi->nextBend = bj;
+    bj->prevBend = bi;
 }
 
 void Network::showAdj()
