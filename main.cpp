@@ -29,7 +29,12 @@ int main()
 
     net.showAdj();
     cout << endl;
-    net.showBends();
+
+    vector<vector<int> > edges = net.getEdges(); 
+    for(vector<vector<int> >::size_type i =0; i<edges.size(); ++i)  {
+        cout << edges[i][0] << '\t' << edges[i][1] << '\n';
+    }
+    
 
     return 0;
 }

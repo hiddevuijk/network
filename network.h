@@ -28,8 +28,12 @@ class Network {
     void polymerize(Vertex *vi, Vertex *vj);
     void polymerize(Bend *bi, Bend *bj);
 
-    void showAdj();
-    void showBends();
+    std::vector<std::vector<int> > getEdges() const;
+    std::vector<std::vector<int> > getBends() const;
+    
+
+    void showAdj() const;
+    void showBends() const;
 
     class Vertex {
       public:
@@ -74,6 +78,7 @@ Network::Network( int Nv)
 {
     for( int vi=0; vi<Nv; ++vi) {
         vertices[vi] = new Vertex(vi);
+        vertices[vi]->index = vi;
     }
 }
 
@@ -162,10 +167,41 @@ void Network::polymerize( Bend *bi, Bend *bj)
     bj->prevBend = bi;
 }
 
-void Network::showAdj()
+std::vector<std::vector<int> > Network::getEdges() const
 {
-    std::vector<Vertex*>::iterator it_v = vertices.begin();
-    std::vector<Vertex*>::iterator it_adj;
+    // list with all edges
+    std::vector<std::vector<int> > edges;
+
+    // a single edge to be added to edges
+    std::vector<int> edge(2);
+
+    std::vector<Vertex*>::const_iterator it_edge;
+    std::vector<Vertex*>::const_iterator it_vertex = vertices.begin();
+    while( it_vertex != vertices.end() ) { 
+        int index_from = (*it_vertex)->index;
+        it_edge = (*it_vertex)->adj.begin(); 
+        // loop over adjacency list
+        while( it_edge != (*it_vertex)->adj.end() ) {
+            int index_to = (*it_edge)->index;
+            // add all edges only once
+            if( index_to > index_from) {
+                edge[0] = index_from; 
+                edge[1] = index_to; 
+                edges.push_back(edge);             
+            }
+            ++it_edge;
+        }
+        ++it_vertex;
+    }
+
+
+    return edges;
+}
+
+void Network::showAdj() const
+{
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Vertex*>::const_iterator it_adj;
     while( it_v != vertices.end() ) {
         std::cout << (*it_v)->index << ":";
         it_adj = (*it_v)->adj.begin();
@@ -178,11 +214,11 @@ void Network::showAdj()
     }
 }
 
-void Network::showBends()
+void Network::showBends() const
 {
 
-    std::vector<Vertex*>::iterator it_v = vertices.begin();
-    std::vector<Bend*>::iterator it_b;
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
     while( it_v != vertices.end() ) {
         std::cout << (*it_v)->index << ":\n";
         it_b = (*it_v)->bends.begin();
