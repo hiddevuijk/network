@@ -4,8 +4,8 @@
 
 /*
     to do:
-            -- destructors
             -- throw error when polymerizing nodes without a bend
+            -- throw other errors
 */
 
 #include "vec2.h"
@@ -34,7 +34,7 @@ class Network {
 
     void setVertexPosition(int i, double x, double y);
 
-    void addEdge(int i, int j);
+    void addEdge(int i, int j, int xb=0, int yb=0, double l0=0);
     void deleteEdge(int i, int j);
 
     void addBend(int mid, int va, int vb);
@@ -46,17 +46,19 @@ class Network {
     void depolymerize(int i); // test // remove from all polymers
 
     // this changes the indices!!!
-    void removeUnconectedVertices(); // --
+    //void removeUnconectedVertices(); // --
     // ....
 
     std::vector<std::vector<int> > getEdges() const;
-    std::vector<std::vector<int> > getBends() const; // ---
-    std::vector<std::vector<int> > getPolymers() const; // ---
+    //std::vector<std::vector<int> > getBends() const; // ---
+    //std::vector<std::vector<int> > getPolymers() const; // ---
+
+    double averageConnectivity() const;
 
     void showAdj() const;
     void showBends() const;
     // print polymer starting at i through j
-    void showPolymer(int i, int j) const;
+    //void showPolymer(int i, int j) const;
 
 
     class Vertex {
@@ -64,7 +66,7 @@ class Network {
         Vertex(): index(-1) {}
         Vertex(int i) : index(i) {}
         Vertex(int i, double x, double y) : index(i), r(x,y) {}
-        // destructor ----
+        ~Vertex();
         int index;
         std::vector<Edge*> edges;
         std::vector<Bend*> bends;
@@ -75,8 +77,14 @@ class Network {
 
     class Edge {
       public:
+
+        Edge(): from(nullptr), to(nullptr) {}
+
+        Edge( Vertex *from, Vertex *to, int xb=0, int yb=0, double l0=0)
+            : from(from), to(to), xb(xb), yb(yb), l0(l0) {}
+
         Vertex *from, *to;
-        int xBoundary, yBoundary;
+        int xb, yb;
         double l0; 
     };
 
@@ -107,8 +115,9 @@ class Network {
         void exchangeVertex(int i, int j);
         void exchangeVertex(Vertex *vi, Vertex *vj);
 
-        void addEdge(Vertex *vi, Vertex *vj);
+        void addEdge(Vertex *vi, Vertex *vj, int xb=0, int yb=0, double l0=0);
         void deleteEdge(Vertex *vi, Vertex *vj);
+        void deleteEdge( std::vector<Edge*>::iterator it);
 
         void addBend(Vertex *mid, Vertex *prev, Vertex *next);
         void addBend(Vertex *mid, Edge *a, Edge *b);
@@ -269,6 +278,7 @@ void Network::addBend(Vertex *mid, Vertex *va, Vertex *vb)
         if( (*it_e)->to == vb ) b = *it_e;
         if( a != nullptr and b != nullptr ) {
             addBend(mid, a, b);
+            break;
         }
         ++it_e;
     }
@@ -326,4 +336,135 @@ void Network::deleteAllBend(Vertex *vi, Vertex *vj)
     deleteBend(vj,vi);
 }
 
+void Network::addEdge(int i, int j, int xb, int yb, double l0)
+{ addEdge( vertices[i], vertices[j], xb, yb, l0); }
+
+void Network::addEdge(Vertex *vi, Vertex *vj, int xb, int yb, double l0)
+{
+    // check if already exists??
+    vi->edges.push_back( new Edge(vi,vj,xb,yb,l0) );
+    vj->edges.push_back( new Edge(vj,vi,-xb,-yb,l0) );
+
+}
+
+void Network::deleteEdge(int vi, int vj)
+{ deleteEdge(vertices[vi], vertices[vj]); }
+
+void Network::deleteEdge(Vertex *vi, Vertex *vj)
+{
+    // find the edge from vi to vj
+    std::vector<Edge*>::iterator it_e = vi->edges.begin();
+    while( it_e != vi->edges.end() ) {
+        if( (*it_e)->to == vj ) {
+            deleteEdge(it_e);
+            break;
+        }
+        ++it_e;
+    }
+    it_e = vj->edges.begin(); 
+    while( it_e != vj->edges.end() ) {
+        if( (*it_e)->to == vi ) {
+            deleteEdge(it_e);
+            break;
+        }
+        ++it_e;
+    }
+    
+}
+
+void Network::deleteEdge( std::vector<Edge*>::iterator it)
+{
+    Edge *temp = *it;
+    *it = temp->from->edges.back();
+    temp->from->edges.pop_back();
+    delete temp;
+}
+
+Network::Vertex::~Vertex()
+{
+    //delete edges
+    for( std::vector<Edge*>::size_type ei=0;ei<edges.size(); ++ei) {
+        delete edges[ei];
+        edges[ei] = nullptr;
+    }
+    //delete bends
+    for( std::vector<Bend*>::size_type bi=0;bi<bends.size(); ++bi) {
+        delete bends[bi];
+        bends[bi] = nullptr;
+    }
+}
+
+void Network::showAdj() const
+{
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Edge*>::const_iterator it_e;
+    while( it_v != vertices.end() ) {
+        std::cout << (*it_v)->index << ":\t";
+        it_e = (*it_v)->edges.begin();
+        while( it_e != (*it_v)->edges.end() ) {
+            std::cout << (*it_e)->to->index << '\t';
+            ++it_e;
+        } 
+        std::cout << '\n';
+        ++it_v;
+    }
+}
+
+void Network::showBends() const
+{
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
+    while( it_v != vertices.end() ) {
+        std::cout << (*it_v)->index << ":\n";
+        it_b = (*it_v)->bends.begin();
+        while( it_b != (*it_v)->bends.end() ) {
+            std::cout << '\t';
+            std::cout << (*it_b)->a->to->index << '\t';
+            std::cout << (*it_b)->mid->index << '\t';
+            std::cout << (*it_b)->b->to->index << '\n';
+            ++it_b;
+        }
+        ++it_v;
+    }
+}
+
+std::vector<std::vector<int> > Network::getEdges() const
+{
+    std::vector<std::vector<int> > edges;
+    std::vector<int> edge(4);
+
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Edge*>::const_iterator it_e;
+    while( it_v != vertices.end() ) {
+        it_e = (*it_v)->edges.begin(); 
+        while( it_e != (*it_v)->edges.end() ) {
+            if( (*it_e)->to->index > (*it_e)->from->index ) {
+                edge[0] = (*it_e)->from->index; 
+                edge[1] = (*it_e)->to->index; 
+                edge[2] = (*it_e)->xb;
+                edge[3] = (*it_e)->yb;
+                edges.push_back(edge);
+            }
+            ++it_e;
+        }
+        ++it_v;
+    }
+    return edges;
+}
+
+double Network::averageConnectivity() const
+{
+    int Nv = 0; // number of vertices with at least one bond
+    double avgc = 0;
+    
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    while( it_v != vertices.end() ) {
+        avgc += (*it_v)->edges.size();
+        if( (*it_v)->edges.size() > 0 ) Nv+=1;
+        ++it_v;
+    }
+
+    return avgc/Nv;
+
+}
 #endif

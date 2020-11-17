@@ -13,14 +13,20 @@ int main()
     int Nv = 5;
     Network net(Nv);
 
-    //net.addEdge(0,1); net.setVertexPosition(0, 0,0);
-    //net.addEdge(1,2); net.setVertexPosition(1, 1,1);
-    //net.addEdge(2,3); net.setVertexPosition(2, 2,0);
-    //net.addEdge(3,4); net.setVertexPosition(3, 3,0);
-    ////net.addEdge(4,0);
-    //net.setVertexPosition(4, 4,0);
+    net.addEdge(0,1); net.setVertexPosition(0, 0,0);
+    net.addEdge(1,2); net.setVertexPosition(1, 1,1);
+    net.addEdge(2,3); net.setVertexPosition(2, 2,0);
+    net.addEdge(3,4); net.setVertexPosition(3, 3,0);
+    net.addEdge(4,0);
+    net.addEdge(4,1);
+    net.setVertexPosition(4, 4,0);
 
-    //net.addBend(1,0,2);
+    net.addBend(1,0,2);
+
+    net.showAdj(); 
+    cout << endl;
+    cout << endl;
+    net.showBends();
 
 
     //ofstream out("topology.txt");
@@ -28,6 +34,7 @@ int main()
     //out.close();
 
     cout << endl;
+    cout << net.averageConnectivity() << endl;
 
 
     return 0;
