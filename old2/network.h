@@ -265,8 +265,8 @@ void Network::deleteBend( std::vector<Bend*>::iterator it_bend)
     depolymerize(*it_bend);
     *it_bend = (*it_bend)->mid->bends.back();
     (*it_bend)->mid->bends.pop_back();
-    delete *it_bend;
-
+    //delete *it_bend;
+    ERROR
 }
 
 
@@ -307,8 +307,11 @@ void Network::addBend(int mid, int prev, int next)
 void Network::addBend(Vertex *mid, Vertex *prev, Vertex *next)
 { mid->bends.push_back( new Bend(mid,prev,next) ); }
 
-void Network::polymerize( int i, int j)
-{ polymerize(vertices[i], vertices[j] ); }
+void Network::polymerize( Bend *bi, Bend *bj)
+{
+    bi->nextBend = bj;
+    bj->prevBend = bi;
+}
 
 void Network::polymerize( Vertex *vi, Vertex *vj )
 {
@@ -333,6 +336,10 @@ void Network::polymerize( Vertex *vi, Vertex *vj )
     polymerize( *it_bi, *it_bj);
     
 }
+
+void Network::polymerize( int i, int j)
+{ polymerize(vertices[i], vertices[j] ); }
+
 
 void Network::depolymerize(int i, int j)
 { depolymerize( vertices[i], vertices[j]); }
@@ -386,11 +393,6 @@ void Network::depolymerize( Bend *b)
     if( b->prevBend != nullptr ) depolymerize(b, b->prevBend);
 }
 
-void Network::polymerize( Bend *bi, Bend *bj)
-{
-    bi->nextBend = bj;
-    bj->prevBend = bi;
-}
 
 std::vector<std::vector<int> > Network::getEdges() const
 {
