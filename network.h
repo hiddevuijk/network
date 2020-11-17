@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 
 class Network {
@@ -25,8 +26,7 @@ class Network {
     // Network ( infile) read network from file
     ~Network();
 
-    // save( out file) write network to outfile
-
+    void write( std::ofstream& out);
     int addVertex();
 
     void addEdge(int i, int j);
@@ -64,6 +64,7 @@ class Network {
         std::vector<Bend*> bends;
 
         // add location info
+        double x,y;
     };
 
 
@@ -395,6 +396,25 @@ std::vector<std::vector<int> > Network::getEdges() const
     return edges;
 }
 
+std::vector<std::vector<int> > Network::getBends() const
+{
+    std::vector<std::vector<int> > bends;
+    std::vector<int> bend(3);
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
+    while( it_v != vertices.end() ) {
+        it_b = (*it_v)->bends.begin();
+        while( it_b != (*it_v)->bends.end() ) {
+            bend[0] = (*it_b)->prev->index; 
+            bend[1] = (*it_b)->mid->index; 
+            bend[2] = (*it_b)->next->index; 
+            bends.push_back( bend );
+            ++it_b;
+        }
+        ++it_v;
+    }
+    return bends;
+}
 void Network::showAdj() const
 {
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
@@ -450,6 +470,32 @@ void Network::showPolymer(int i, int j) const
         if( nextBend == firstBend) break;
         nextBend = nextBend->nextBend;
     }
+}
+
+void Network::write( std::ofstream& out)
+{
+
+    std::vector<std::vector<int> > edges = getEdges();
+    std::vector<std::vector<int> > bends = getBends();
+    out << vertices.size() << '\n';
+    out << edges.size() << '\n';
+    out << bends.size() << '\n';
+    
+
+    for( std::vector<Vertex*>::size_type vi = 0; vi< vertices.size() ; ++ vi) {
+        out << vi << '\t' << vertices[vi]->x << '\t' << vertices[vi]->y << '\n';
+    }
+   
+    for( std::vector<std::vector<int> >::size_type ei =0; ei<edges.size(); ++ei){
+        out << edges[ei][0] << '\t' << edges[ei][1] << '\n';
+    }
+
+    for(std::vector<std::vector<int> >::size_type bi=0; bi<bends.size(); ++bi) {
+        out << bends[bi][0] << '\t' << bends[bi][1] << '\t' << bends[bi][2] << '\n';
+    }
+
+    
+
 }
 
 #endif

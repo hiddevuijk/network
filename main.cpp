@@ -21,9 +21,10 @@ int main()
 
     net.addBend(1,0,2);
 
-    net.deleteBend(1,0,2);
 
-
+    ofstream out("topology.txt");
+    net.write(out);
+    out.close();
 
     cout << endl;
 
