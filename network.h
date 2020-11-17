@@ -8,6 +8,7 @@
             -- throw error when polymerizing nodes without a bend
 */
 
+#include "vec2.h"
 
 #include <vector>
 #include <iostream>
@@ -18,6 +19,7 @@ class Network {
   public:
 
     class Vertex;
+    class Edge;
     class Bend;
 
 
@@ -61,14 +63,22 @@ class Network {
       public:
         Vertex(): index(-1) {}
         Vertex(int i) : index(i) {}
-        Vertex(int i, double x, double y) : index(i), x(x), y(y) {}
+        Vertex(int i, double x, double y) : index(i), r(x,y) {}
         // destructor ----
         int index;
         std::vector<Vertex*> adj;
+        std::vector<Edge*> edges;
         std::vector<Bend*> bends;
 
         // add location info
-        double x,y;
+        vec2 r;
+    };
+
+    class Edge {
+      public:
+        Vertex *from, *to;
+        int xBoundary, yBoundary;
+        double l0; 
     };
 
 
@@ -155,8 +165,8 @@ int Network::addVertex(double x, double y)
 
 void Network::setVertexPosition(int i, double x, double y)
 {
-    vertices[i]->x = x;
-    vertices[i]->y = y;
+    vertices[i]->r.x = x;
+    vertices[i]->r.y = y;
 }
 
 void Network::deleteVertex(int i)
@@ -500,7 +510,7 @@ void Network::write( std::ofstream& out)
     
 
     for( std::vector<Vertex*>::size_type vi = 0; vi< vertices.size() ; ++ vi) {
-        out << vi << '\t' << vertices[vi]->x << '\t' << vertices[vi]->y << '\n';
+        out << vi << '\t' << vertices[vi]->r.x << '\t' << vertices[vi]->r.y << '\n';
     }
    
     for( std::vector<std::vector<int> >::size_type ei =0; ei<edges.size(); ++ei){
