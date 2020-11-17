@@ -28,6 +28,9 @@ class Network {
 
     void write( std::ofstream& out);
     int addVertex();
+    int addVertex(double x, double y);
+
+    void setVertexPosition(int i, double x, double y);
 
     void addEdge(int i, int j);
     void deleteEdge(int i, int j);
@@ -58,6 +61,7 @@ class Network {
       public:
         Vertex(): index(-1) {}
         Vertex(int i) : index(i) {}
+        Vertex(int i, double x, double y) : index(i), x(x), y(y) {}
         // destructor ----
         int index;
         std::vector<Vertex*> adj;
@@ -140,6 +144,19 @@ int Network::addVertex()
     std::vector<Vertex*>::size_type  Nv = vertices.size();
     vertices.push_back( new Vertex(Nv) );
     return Nv;
+}
+
+int Network::addVertex(double x, double y)
+{
+    std::vector<Vertex*>::size_type  Nv = vertices.size();
+    vertices.push_back( new Vertex(Nv, x, y) );
+    return Nv;
+}
+
+void Network::setVertexPosition(int i, double x, double y)
+{
+    vertices[i]->x = x;
+    vertices[i]->y = y;
 }
 
 void Network::deleteVertex(int i)
