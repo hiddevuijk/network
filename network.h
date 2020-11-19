@@ -95,25 +95,21 @@ class Network {
         Bend()
             : mid(nullptr), a(nullptr), b(nullptr),
               prevBend(nullptr), nextBend(nullptr),
-              prevVertex(nullptr), nextVertex(nullptr),
               index(-1), filament(-1) {}
 
         Bend( Vertex *mid, Edge* a, Edge *b )
             : mid(mid), a(a), b(b),
               prevBend(nullptr), nextBend(nullptr),
-              prevVertex(nullptr), nextVertex(nullptr),
               filament(-1) {}
 
         Bend( Vertex *mid, Edge* a, Edge *b, int index)
             : mid(mid), a(a), b(b),
               prevBend(nullptr), nextBend(nullptr),
-              prevVertex(nullptr), nextVertex(nullptr),
               index(index), filament(-1) {}
 
         Vertex *mid;
         Edge *a, *b;
         Bend *prevBend, *nextBend;
-        Vertex *prevVertex, *nextVertex;
         int index;
         int filament;
         double theta0;
@@ -511,20 +507,32 @@ std::vector<std::vector<int> > Network::getPolymers()
                 Bend *first = firstBend(bend);
                 bend = first;
                 while( bend != nullptr) {
+                    // set filament index
                     bend->filament = filament_index;
+
+                    // if it is the first bend, also include the first vertex
                     if( bend->prevBend == nullptr ) {
-                        //polymers[filament_index].push_back(bend->prevVertex->index);
+                        //if( bend->a->to == bend->nextBend->mid ) {
+                        //    polymers[filament_index].push_back( bend->b->to->index);
+                        //} else {
+                        //    polymers[filament_index].push_back( bend->a->to->index);
+                        //}
                     }
+
+                    // add vertex index
                     polymers[filament_index].push_back(bend->mid->index);
-                    if( bend->nextBend == nullptr ) {
-                        //polymers[filament_index].push_back(bend->nextVertex->index);
+
+                    // if it is the last bend, also include the next vertex index
+                    if( bend->nextBend == nullptr or bend->nextBend == first ) {
+                        //if( bend->a->to == bend->prevBend->mid ) {
+                        //    polymers[filament_index].push_back( bend->b->to->index);
+                        //} else {
+                        //    polymers[filament_index].push_back( bend->a->to->index);
+                        //}
+                        break;
                     }
 
                     bend = bend->nextBend;
-                    if( bend == first) {
-                        polymers[filament_index].push_back(bend->mid->index);
-                        break;
-                    }
                 }
 
                 polymers.push_back( std::vector<int>() );
@@ -550,7 +558,6 @@ void Network::resetFilamentIndex()
         }
         ++it_v;
     }   
-
 }
 
 
