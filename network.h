@@ -51,12 +51,13 @@ class Network {
 
     std::vector<std::vector<int> > getEdges() const;
     //std::vector<std::vector<int> > getBends() const; // ---
-    //std::vector<std::vector<int> > getPolymers() const; // ---
+    std::vector<std::vector<int> > getPolymers();
 
     double averageConnectivity() const;
 
     void showAdj() const;
     void showBends() const;
+    void showPolymers();
     // print polymer starting at i through j
     //void showPolymer(int i, int j) const;
 
@@ -94,15 +95,26 @@ class Network {
         Bend()
             : mid(nullptr), a(nullptr), b(nullptr),
               prevBend(nullptr), nextBend(nullptr),
-              filament(-1) {}
+              prevVertex(nullptr), nextVertex(nullptr),
+              index(-1), filament(-1) {}
 
-        Bend( Vertex *mid, Edge* a, Edge *b)
+        Bend( Vertex *mid, Edge* a, Edge *b )
             : mid(mid), a(a), b(b),
               prevBend(nullptr), nextBend(nullptr),
+              prevVertex(nullptr), nextVertex(nullptr),
               filament(-1) {}
+
+        Bend( Vertex *mid, Edge* a, Edge *b, int index)
+            : mid(mid), a(a), b(b),
+              prevBend(nullptr), nextBend(nullptr),
+              prevVertex(nullptr), nextVertex(nullptr),
+              index(index), filament(-1) {}
+
         Vertex *mid;
         Edge *a, *b;
         Bend *prevBend, *nextBend;
+        Vertex *prevVertex, *nextVertex;
+        int index;
         int filament;
         double theta0;
     };
@@ -134,6 +146,8 @@ class Network {
         void depolymerize( Bend *bi, Bend *bj);
         void depolymerize( Bend *bi); 
 
+        void resetFilamentIndex();
+        Bend* firstBend( Bend *bend) const;
 };
 
 Network::Network() {};
@@ -236,8 +250,6 @@ void Network::depolymerize(int i)
 { depolymerize(vertices[i]); }
 
 
-
-
 void Network::depolymerize( Vertex *vi, Vertex *vj)
 {
 
@@ -259,9 +271,8 @@ void Network::depolymerize( Vertex *vi, Vertex *vj)
 void Network::depolymerize(int i, int j)
 { depolymerize( vertices[i], vertices[j]); }
 
-
 void Network::addBend(Vertex *mid, Edge *a, Edge *b)
-{ mid->bends.push_back( new Bend(mid, a, b) ); }
+{ mid->bends.push_back( new Bend(mid, a, b, mid->bends.size() ) ); }
 
 void Network::addBend(int mid, int va, int vb)
 { addBend( vertices[mid], vertices[va], vertices[vb]); }
@@ -291,6 +302,7 @@ void Network::deleteBend( std::vector<Bend*>::iterator it_bend)
     // move last bend pointer to current location in the bend list
     Bend *temp = *it_bend;
     *it_bend = temp->mid->bends.back();
+    (*it_bend)->index = temp->index;
     temp->mid->bends.pop_back();
     delete temp;
     
@@ -302,10 +314,11 @@ void Network::deleteBend(Bend *bend)
 
     depolymerize(bend); 
 
-    std::vector<Bend*>::iterator it_b = std::find(bend->mid->bends.begin(), bend->mid->bends.end(), bend);
-    if( it_b == bend->mid->bends.end() ) return;
-    deleteBend( it_b);
-    
+    //std::vector<Bend*>::iterator it_b = std::find(bend->mid->bends.begin(), bend->mid->bends.end(), bend);
+    //if( it_b == bend->mid->bends.end() ) return;
+    //deleteBend( it_b);
+   
+    deleteBend( bend->mid->bends.begin() + bend->index ); 
 
 }
 
@@ -467,4 +480,95 @@ double Network::averageConnectivity() const
     return avgc/Nv;
 
 }
+
+
+Network::Bend* Network::firstBend( Bend *bend) const
+{
+    if( bend == nullptr ) return nullptr;
+    Bend *first = bend;
+    while( bend->prevBend != nullptr) {
+        bend = bend->prevBend;
+        if( bend == first ) break;
+    }
+    return bend;
+}
+
+std::vector<std::vector<int> > Network::getPolymers() 
+{
+    std::vector<std::vector<int> > polymers;
+    polymers.push_back( std::vector<int>() );
+
+    resetFilamentIndex();
+
+    int filament_index = 0;
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
+    while( it_v != vertices.end() ) {
+        it_b = (*it_v)->bends.begin(); 
+        while( it_b != (*it_v)->bends.end() ) {
+            if( (*it_b)->filament == -1 ){
+                Bend *bend = *it_b;            
+                Bend *first = firstBend(bend);
+                bend = first;
+                while( bend != nullptr) {
+                    bend->filament = filament_index;
+                    if( bend->prevBend == nullptr ) {
+                        //polymers[filament_index].push_back(bend->prevVertex->index);
+                    }
+                    polymers[filament_index].push_back(bend->mid->index);
+                    if( bend->nextBend == nullptr ) {
+                        //polymers[filament_index].push_back(bend->nextVertex->index);
+                    }
+
+                    bend = bend->nextBend;
+                    if( bend == first) {
+                        polymers[filament_index].push_back(bend->mid->index);
+                        break;
+                    }
+                }
+
+                polymers.push_back( std::vector<int>() );
+                ++filament_index;
+            }
+            ++it_b;
+        }
+        ++it_v;
+    }
+
+    return polymers;
+}
+
+void Network::resetFilamentIndex()
+{
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
+    while( it_v != vertices.end() ) {
+        it_b = (*it_v)->bends.begin(); 
+        while( it_b != (*it_v)->bends.end() ) {
+            (*it_b)->filament = -1;
+            ++it_b;
+        }
+        ++it_v;
+    }   
+
+}
+
+
+void Network::showPolymers()
+{
+    std::vector<std::vector<int> > p = getPolymers();
+    std::vector<std::vector<int> >::iterator it_p = p.begin();
+    while( it_p != p.end() ) {
+        std::vector<int>::iterator it = it_p->begin();
+        while( it != it_p->end() ) {
+            std::cout << *it << '\t';
+            ++it;
+        }
+        std::cout << '\n';
+        ++it_p;
+    }
+
+}
+
+
 #endif
