@@ -106,6 +106,8 @@ class Network {
             : mid(mid), a(a), b(b),
               prevBend(nullptr), nextBend(nullptr),
               index(index), filament(-1) {}
+        Vertex* previousVertex() const;
+        Vertex* nextVertex() const;
 
         Vertex *mid;
         Edge *a, *b;
@@ -510,13 +512,9 @@ std::vector<std::vector<int> > Network::getPolymers()
                     // set filament index
                     bend->filament = filament_index;
 
-                    // if it is the first bend, also include the first vertex
-                    if( bend->prevBend == nullptr ) {
-                        //if( bend->a->to == bend->nextBend->mid ) {
-                        //    polymers[filament_index].push_back( bend->b->to->index);
-                        //} else {
-                        //    polymers[filament_index].push_back( bend->a->to->index);
-                        //}
+                    // if it is the first bend that is not of a loop filament, also include the first vertex
+                    if( bend == first and first->prevBend == nullptr) {
+                        polymers[filament_index].push_back( bend->previousVertex()->index );
                     }
 
                     // add vertex index
@@ -524,11 +522,7 @@ std::vector<std::vector<int> > Network::getPolymers()
 
                     // if it is the last bend, also include the next vertex index
                     if( bend->nextBend == nullptr or bend->nextBend == first ) {
-                        //if( bend->a->to == bend->prevBend->mid ) {
-                        //    polymers[filament_index].push_back( bend->b->to->index);
-                        //} else {
-                        //    polymers[filament_index].push_back( bend->a->to->index);
-                        //}
+                        polymers[filament_index].push_back( bend->nextVertex()->index );
                         break;
                     }
 
@@ -577,5 +571,26 @@ void Network::showPolymers()
 
 }
 
+
+Network::Vertex* Network::Bend::previousVertex() const
+{
+    if( prevBend != nullptr ) return prevBend->mid;
+
+    // if bend is not part of filament, return nullptr
+    if( nextBend == nullptr ) return nullptr;
+    if( a->to == nextBend->mid ) return b->to;
+    return a->to;
+}
+
+Network::Vertex* Network::Bend::nextVertex() const
+{
+    if( nextBend != nullptr ) return nextBend->mid;
+
+    // if bend is not part of filament, return nullptr
+    if( prevBend == nullptr ) return nullptr;
+
+    if( a->to == prevBend->mid ) return b->to;
+    return a->to;
+}
 
 #endif
