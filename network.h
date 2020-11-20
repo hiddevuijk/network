@@ -512,13 +512,6 @@ std::vector<std::vector<int> > Network::getPolymers()
                     // set filament index
                     bend->filament = filament_index;
 
-                    // if both nextBend and prevBend are 0, it is a filament with a single bend
-                    if( bend->nextBend == nullptr and bend->prevBend == nullptr ) {
-                        polymers[filament_index].push_back( bend->a->to->index );
-                        polymers[filament_index].push_back(bend->mid->index);
-                        polymers[filament_index].push_back( bend->b->to->index );
-                        break;
-                    }
 
                     // if it is the first bend that is not of a loop filament, also include the first vertex
                     if( bend == first and first->prevBend == nullptr) {
@@ -584,8 +577,8 @@ Network::Vertex* Network::Bend::previousVertex() const
 {
     if( prevBend != nullptr ) return prevBend->mid;
 
-    // if bend is not part of filament, return nullptr
-    if( nextBend == nullptr ) return nullptr;
+    // if bend is not part of filament, then a->to is called the next vertex
+    if( nextBend == nullptr ) return a->to;
     if( a->to == nextBend->mid ) return b->to;
     return a->to;
 }
@@ -594,8 +587,8 @@ Network::Vertex* Network::Bend::nextVertex() const
 {
     if( nextBend != nullptr ) return nextBend->mid;
 
-    // if bend is not part of filament, return nullptr
-    if( prevBend == nullptr ) return nullptr;
+    // if bend is not part of filament, then b->to is called the vertex
+    if( prevBend == nullptr ) return b->to;
 
     if( a->to == prevBend->mid ) return b->to;
     return a->to;
