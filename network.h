@@ -15,6 +15,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 class Network {
   public:
@@ -26,7 +28,7 @@ class Network {
 
     Network();
     Network(int Nv);
-    // Network ( infile) read network from file
+    Network ( std::ifstream& in);
     ~Network();
 
     void write( std::ofstream& out);
@@ -439,7 +441,7 @@ void Network::showBends() const
 std::vector<std::vector<int> > Network::getEdges() const
 {
     std::vector<std::vector<int> > edges;
-    std::vector<int> edge(4);
+    std::vector<int> edge(5);
 
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
     std::vector<Edge*>::const_iterator it_e;
@@ -451,6 +453,7 @@ std::vector<std::vector<int> > Network::getEdges() const
                 edge[1] = (*it_e)->to->index; 
                 edge[2] = (*it_e)->xb;
                 edge[3] = (*it_e)->yb;
+                edge[4] = (*it_e)->l0;
                 edges.push_back(edge);
             }
             ++it_e;
@@ -464,7 +467,7 @@ std::vector<std::vector<int> > Network::getBends() const
 {
 
     std::vector<std::vector<int> > bends;
-    std::vector<int> bend(7);
+    std::vector<int> bend(8);
 
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
     std::vector<Bend*>::const_iterator it_b;
@@ -478,6 +481,7 @@ std::vector<std::vector<int> > Network::getBends() const
             bend[4] = (*it_b)->b->to->index;
             bend[5] = (*it_b)->b->xb;
             bend[6] = (*it_b)->b->yb;
+            bend[7] = (*it_b)->theta0;
             bends.push_back(bend); 
             
             ++it_b;
@@ -539,8 +543,8 @@ std::vector<std::vector<int> > Network::getPolymers()
                     bend->filament = filament_index;
 
 
-                    // if it is the first bend that is not of a loop filament, also include the first vertex
-                    if( bend == first and first->prevBend == nullptr) {
+                    // include the first vertex
+                    if( bend == first ) {
                         polymers[filament_index].push_back( bend->previousVertex()->index );
                     }
 
@@ -548,14 +552,18 @@ std::vector<std::vector<int> > Network::getPolymers()
                     polymers[filament_index].push_back(bend->mid->index);
 
                     // if it is the last bend, also include the next vertex index
-                    if( bend->nextBend == nullptr or bend->nextBend == first ) {
+                    if( bend->nextBend == nullptr ) {
                         polymers[filament_index].push_back( bend->nextVertex()->index );
+                    }
+
+                    if(  bend->nextBend == first ) {
+                        polymers[filament_index].push_back( bend->nextVertex()->index );
+                        polymers[filament_index].push_back( first->nextVertex()->index );
                         break;
                     }
 
                     bend = bend->nextBend;
                 }
-
                 polymers.push_back( std::vector<int>() );
                 ++filament_index;
             }
@@ -563,7 +571,7 @@ std::vector<std::vector<int> > Network::getPolymers()
         }
         ++it_v;
     }
-
+    polymers.pop_back();
     return polymers;
 }
 
@@ -618,6 +626,130 @@ Network::Vertex* Network::Bend::nextVertex() const
 
     if( a->to == prevBend->mid ) return b->to;
     return a->to;
+}
+
+void Network::write( std::ofstream& out) 
+{
+    std::vector<std::vector<int> > edges = getEdges();
+    std::vector<std::vector<int> > bends = getBends();
+    std::vector<std::vector<int> > polymers = getPolymers();
+    int Nv = vertices.size();
+    int Ne = edges.size();
+    int Nb = bends.size();
+    int Np = polymers.size();
+
+    out << Nv << '\n';
+    out << Ne << '\n';
+    out << Nb << '\n';
+    out << Np << '\n';
+
+    std::vector<std::vector<int> >::iterator it_e = edges.begin();
+    while( it_e != edges.end() ) {
+        out << (*it_e)[0] << '\t';
+        out << (*it_e)[1] << '\t';
+        out << (*it_e)[2] << '\t';
+        out << (*it_e)[3] << '\t';
+        out << (*it_e)[4] << '\n';
+        ++it_e;
+    }
+
+    std::vector<std::vector<int> >::iterator it_b = bends.begin();
+    while( it_b != bends.end() ) {
+        out << (*it_b)[0] << '\t';
+        out << (*it_b)[1] << '\t';
+        out << (*it_b)[2] << '\t';
+        out << (*it_b)[3] << '\t';
+        out << (*it_b)[4] << '\t';
+        out << (*it_b)[5] << '\t';
+        out << (*it_b)[6] << '\t';
+        out << (*it_b)[7] << '\n';
+        ++it_b;
+    }
+
+    std::vector<std::vector<int> >::iterator it_p = polymers.begin();
+    std::vector<int>::iterator it_pi;
+    while( it_p != polymers.end() ) {
+        it_pi = it_p->begin();
+        while( it_pi != it_p->end() ) {
+            out << *it_pi;
+            if( it_pi == it_p->end() - 1) out << '\n';
+            else out << '\t';
+            ++it_pi;
+        }    
+        ++it_p;
+    }
+ 
+}
+
+Network::Network( std::ifstream& in) 
+{
+    int Nv, Ne, Nb, Np; 
+    in >> Nv;
+    in >> Ne;
+    in >> Nb;
+    in >> Np;
+    std::vector<std::vector<int> > edges(Ne, std::vector<int>(5) );
+    std::vector<std::vector<int> > bends(Nb, std::vector<int>(8) );
+    std::vector<std::vector<int> > polymers(Np);
+
+    for( int li = 0; li < Ne; ++li ) {
+        in >> edges[li][0];    
+        in >> edges[li][1];    
+        in >> edges[li][2];    
+        in >> edges[li][3];    
+        in >> edges[li][4];    
+    } 
+
+    for( int li=0; li < Nb; ++li ) {
+        in >> bends[li][0];
+        in >> bends[li][1];
+        in >> bends[li][2];
+        in >> bends[li][3];
+        in >> bends[li][4];
+        in >> bends[li][5];
+        in >> bends[li][6];
+        in >> bends[li][7];
+    }
+
+   std::string line; 
+    int pi;
+    std::getline( in, line);
+    for( int li=0; li < Np; ++li ){
+        std::getline( in, line);
+        std::stringstream ss(line);
+        while( ss >> pi ) polymers[li].push_back(pi);
+    } 
+
+    for(int vi=0;vi<Nv;++vi) addVertex();
+
+    for(int ei=0;ei<Ne;++ei) {
+        addEdge( edges[ei][0], edges[ei][1],edges[ei][2], edges[ei][3], edges[ei][4]);
+    }
+    for(int bi=0; bi<Nb;++bi) {
+        addBend( bends[bi][0], bends[bi][1], bends[bi][4]);
+    }
+   
+    for(int pi=0; pi<Np;++pi) {
+
+        // do not polymerize if polymer is single bend
+        if( polymers[pi].size() < 4 ) continue; 
+        int Npi = polymers[pi].size();
+        // if polymer is a loop
+        if( polymers[pi][0] == polymers[pi][Npi-3] ) {
+            for( int bi = 1; bi < Npi-2; ++bi) {
+                int a = polymers[pi][bi];
+                int b = polymers[pi][bi+1];
+                polymerize(a,b); 
+            }
+        } else {
+            for( int bi = 1; bi < Npi-2; ++bi) {
+                int a = polymers[pi][bi];
+                int b = polymers[pi][bi+1];
+                polymerize(a,b); 
+            }
+
+        }
+    } 
 }
 
 #endif
