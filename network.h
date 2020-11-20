@@ -258,6 +258,7 @@ void Network::depolymerize( Vertex *vi, Vertex *vj)
             depolymerize( *it_b, (*it_b)->nextBend);
             break;
         }
+
         if( (*it_b)->prevBend->mid == vj ) {
             depolymerize( (*it_b)->prevBend, *it_b );
             break;
@@ -271,7 +272,10 @@ void Network::depolymerize(int i, int j)
 { depolymerize( vertices[i], vertices[j]); }
 
 void Network::addBend(Vertex *mid, Edge *a, Edge *b)
-{ mid->bends.push_back( new Bend(mid, a, b, mid->bends.size() ) ); }
+{
+    Bend* bend = new Bend( mid,a,b,mid->bends.size() );
+    mid->bends.push_back( bend );
+}
 
 void Network::addBend(int mid, int va, int vb)
 { addBend( vertices[mid], vertices[va], vertices[vb]); }
@@ -336,7 +340,7 @@ void Network::deleteBend(int mid, int va)
 
 
 void Network::deleteAllBend(int vi, int vj)
-{ deleteBend( vertices[vi], vertices[vj]); }
+{ deleteAllBend( vertices[vi], vertices[vj]); }
 
 void Network::deleteAllBend(Vertex *vi, Vertex *vj)
 {
@@ -382,6 +386,10 @@ void Network::deleteEdge(Vertex *vi, Vertex *vj)
 
 void Network::deleteEdge( std::vector<Edge*>::iterator it)
 {
+
+    // delete the corresponding bend
+    deleteAllBend( (*it)->from, (*it)->to );
+
     Edge *temp = *it;
     *it = temp->from->edges.back();
     temp->from->edges.pop_back();
@@ -522,56 +530,56 @@ Network::Bend* Network::firstBend( Bend *bend) const
 std::vector<std::vector<int> > Network::getPolymers() 
 {
     std::vector<std::vector<int> > polymers;
-    polymers.push_back( std::vector<int>() );
+    //polymers.push_back( std::vector<int>() );
 
-    resetFilamentIndex();
+    //resetFilamentIndex();
 
-    int filament_index = 0;
-    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
-    std::vector<Bend*>::const_iterator it_b;
-    while( it_v != vertices.end() ) {
-        it_b = (*it_v)->bends.begin(); 
-        while( it_b != (*it_v)->bends.end() ) {
+    //int filament_index = 0;
+    //std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    //std::vector<Bend*>::const_iterator it_b;
+    //while( it_v != vertices.end() ) {
+    //    it_b = (*it_v)->bends.begin(); 
+    //    while( it_b != (*it_v)->bends.end() ) {
 
-            // if the bend is part of a not yet added filament
-            if( (*it_b)->filament == -1 ){
-                Bend *bend = *it_b;            
-                Bend *first = firstBend(bend);
-                bend = first;
-                while( bend != nullptr) {
-                    // set filament index
-                    bend->filament = filament_index;
+    //        // if the bend is part of a not yet added filament
+    //        if( (*it_b)->filament == -1 ){
+    //            Bend *bend = *it_b;            
+    //            Bend *first = firstBend(bend);
+    //            bend = first;
+    //            while( bend != nullptr) {
+    //                // set filament index
+    //                bend->filament = filament_index;
 
 
-                    // include the first vertex
-                    if( bend == first ) {
-                        polymers[filament_index].push_back( bend->previousVertex()->index );
-                    }
+    //                // include the first vertex
+    //                if( bend == first ) {
+    //                    polymers[filament_index].push_back( bend->previousVertex()->index );
+    //                }
 
-                    // add vertex index
-                    polymers[filament_index].push_back(bend->mid->index);
+    //                // add vertex index
+    //                polymers[filament_index].push_back(bend->mid->index);
 
-                    // if it is the last bend, also include the next vertex index
-                    if( bend->nextBend == nullptr ) {
-                        polymers[filament_index].push_back( bend->nextVertex()->index );
-                    }
+    //                // if it is the last bend, also include the next vertex index
+    //                if( bend->nextBend == nullptr ) {
+    //                    polymers[filament_index].push_back( bend->nextVertex()->index );
+    //                }
 
-                    if(  bend->nextBend == first ) {
-                        polymers[filament_index].push_back( bend->nextVertex()->index );
-                        polymers[filament_index].push_back( first->nextVertex()->index );
-                        break;
-                    }
+    //                if(  bend->nextBend == first ) {
+    //                    polymers[filament_index].push_back( bend->nextVertex()->index );
+    //                    polymers[filament_index].push_back( first->nextVertex()->index );
+    //                    break;
+    //                }
 
-                    bend = bend->nextBend;
-                }
-                polymers.push_back( std::vector<int>() );
-                ++filament_index;
-            }
-            ++it_b;
-        }
-        ++it_v;
-    }
-    polymers.pop_back();
+    //                bend = bend->nextBend;
+    //            }
+    //            polymers.push_back( std::vector<int>() );
+    //            ++filament_index;
+    //        }
+    //        ++it_b;
+    //    }
+    //    ++it_v;
+    //}
+    //polymers.pop_back();
     return polymers;
 }
 
