@@ -208,7 +208,7 @@ void Network::polymerize( Vertex *vi, Vertex *vj )
     //find the bend with  vi - vj - ?
     std::vector<Bend*>::iterator it_bj = vj->bends.begin(); 
     while( it_bj != vj->bends.end() ) {
-        if( (*it_bj)->a->from == vi or (*it_bi)->b->from == vi ) break;
+        if( (*it_bj)->a->to == vi or (*it_bi)->b->to == vi ) break;
         ++it_bj;
     }
     //if( it_bj == vj->bends.end() ) return;
