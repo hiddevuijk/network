@@ -125,6 +125,26 @@ Network generateNetwork(int Nx, int Ny, double Lx)
         net.polymerize(vi, viNext);
     }}
 
+    // add SE-NW bends
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viPrev = viNeighborSE(vi,Nx,Ny);  
+        viNext = viNeighborNW(vi,Nx,Ny);  
+        net.addBend(vi, viPrev, viNext);
+
+    }}
+    //polymerize SE-NW bends
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viNext = viNeighborNW(vi,Nx,Ny);  
+        net.polymerize(vi, viNext);
+    }}
+
+
+
+    // cut every filament once
 
    return net;
 
