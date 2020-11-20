@@ -4,6 +4,7 @@
 
 /*
     to do:
+            -- throw error when adding bend without edge
             -- throw error when polymerizing nodes without a bend
             -- throw other errors
 */
@@ -50,7 +51,7 @@ class Network {
     // ....
 
     std::vector<std::vector<int> > getEdges() const;
-    //std::vector<std::vector<int> > getBends() const; // ---
+    std::vector<std::vector<int> > getBends() const;
     std::vector<std::vector<int> > getPolymers();
 
     double averageConnectivity() const;
@@ -58,8 +59,6 @@ class Network {
     void showAdj() const;
     void showBends() const;
     void showPolymers();
-    // print polymer starting at i through j
-    //void showPolymer(int i, int j) const;
 
 
     class Vertex {
@@ -312,10 +311,6 @@ void Network::deleteBend(Bend *bend)
 
     depolymerize(bend); 
 
-    //std::vector<Bend*>::iterator it_b = std::find(bend->mid->bends.begin(), bend->mid->bends.end(), bend);
-    //if( it_b == bend->mid->bends.end() ) return;
-    //deleteBend( it_b);
-   
     deleteBend( bend->mid->bends.begin() + bend->index ); 
 
 }
@@ -439,6 +434,8 @@ void Network::showBends() const
     }
 }
 
+
+
 std::vector<std::vector<int> > Network::getEdges() const
 {
     std::vector<std::vector<int> > edges;
@@ -461,6 +458,33 @@ std::vector<std::vector<int> > Network::getEdges() const
         ++it_v;
     }
     return edges;
+}
+
+std::vector<std::vector<int> > Network::getBends() const
+{
+
+    std::vector<std::vector<int> > bends;
+    std::vector<int> bend(7);
+
+    std::vector<Vertex*>::const_iterator it_v = vertices.begin();
+    std::vector<Bend*>::const_iterator it_b;
+    while( it_v != vertices.end() ) {
+        it_b = (*it_v)->bends.begin();
+        while( it_b != (*it_v)->bends.end() ) {
+            bend[0] = (*it_b)->mid->index;
+            bend[1] = (*it_b)->a->to->index;
+            bend[2] = (*it_b)->a->xb;
+            bend[3] = (*it_b)->a->yb;
+            bend[4] = (*it_b)->b->to->index;
+            bend[5] = (*it_b)->b->xb;
+            bend[6] = (*it_b)->b->yb;
+            bends.push_back(bend); 
+            
+            ++it_b;
+        }
+        ++it_v;
+    }
+    return bends; 
 }
 
 double Network::averageConnectivity() const
@@ -504,6 +528,8 @@ std::vector<std::vector<int> > Network::getPolymers()
     while( it_v != vertices.end() ) {
         it_b = (*it_v)->bends.begin(); 
         while( it_b != (*it_v)->bends.end() ) {
+
+            // if the bend is part of a not yet added filament
             if( (*it_b)->filament == -1 ){
                 Bend *bend = *it_b;            
                 Bend *first = firstBend(bend);
