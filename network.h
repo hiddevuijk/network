@@ -512,6 +512,14 @@ std::vector<std::vector<int> > Network::getPolymers()
                     // set filament index
                     bend->filament = filament_index;
 
+                    // if both nextBend and prevBend are 0, it is a filament with a single bend
+                    if( bend->nextBend == nullptr and bend->prevBend == nullptr ) {
+                        polymers[filament_index].push_back( bend->a->to->index );
+                        polymers[filament_index].push_back(bend->mid->index);
+                        polymers[filament_index].push_back( bend->b->to->index );
+                        break;
+                    }
+
                     // if it is the first bend that is not of a loop filament, also include the first vertex
                     if( bend == first and first->prevBend == nullptr) {
                         polymers[filament_index].push_back( bend->previousVertex()->index );

@@ -10,7 +10,7 @@ using namespace std;
 
 int main()
 {
-    int Nv = 4;
+    int Nv = 6;
     Network net(Nv);
 
     net.addEdge(0,1);
@@ -27,6 +27,12 @@ int main()
     net.polymerize(1,2);
     net.polymerize(2,3);
     net.polymerize(3,0);
+
+    net.addEdge(2,4);
+    net.addEdge(4,5);
+    
+    net.addBend(4,2,5);
+    
 
     net.showAdj(); 
     cout << endl;
