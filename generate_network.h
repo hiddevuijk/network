@@ -63,7 +63,6 @@ int viNeighborSW(int vi, int Nx, int Ny)
 
 
 
-
 Network generateNetwork(int Nx, int Ny, double Lx)
 {
     long int seed = 123456789;
@@ -75,7 +74,57 @@ Network generateNetwork(int Nx, int Ny, double Lx)
 
     int Nv = Nx*Ny; // number of vertices
     Network net(Nv);
-      
+     
+    double dx = Lx/Nx;
+    double dy = dx*std::sqrt(3./4.);
+
+    int vi; 
+    for(int xi=0; xi<Nx; ++xi) {
+    for(int yi=0; yi<Ny; ++yi) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        net.setVertexPosition( vi, xi*dx, yi*dy);
+        net.addEdge( vi, viNeighborE(xi,yi, Nx, Ny));
+        net.addEdge( vi, viNeighborSE(xi,yi, Nx, Ny));
+        net.addEdge( vi, viNeighborSW(xi,yi, Nx, Ny));
+    }}
+
+    // add Bends
+    int viPrev, viNext;
+
+    // add W-E bends
+    for(int yi=0; yi<Ny; ++yi ){
+        vi = xy2v(0,yi,Nx,Ny);
+        for(int xi = 0; xi < Nx; ++xi ) {
+            vi = xy2v(xi,yi,Nx,Ny); 
+            viPrev = viNeighborW(xi,yi,Nx,Ny);
+            viNext = viNeighborE(xi,yi,Nx,Ny);
+            net.addBend(vi, viPrev, viNext);
+        } 
+        for(int xi=0; xi<Nx; ++xi ) {
+            vi = xy2v(xi,yi,Nx,Ny); 
+            viNext = viNeighborE(xi,yi,Nx,Ny);
+            net.polymerize(vi, viNext);
+        }
+
+    }
+
+    // add SW-NE bends
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viPrev = viNeighborSW(vi,Nx,Ny);  
+        viNext = viNeighborNE(vi,Nx,Ny);  
+        net.addBend(vi, viPrev, viNext);
+
+    }}
+    //polymerize SW-NE bends
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viNext = viNeighborNE(vi,Nx,Ny);  
+        net.polymerize(vi, viNext);
+    }}
+
 
    return net;
 
