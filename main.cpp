@@ -1,5 +1,6 @@
 
 #include "network.h"
+#include "generate_network.h"
 
 #include <iostream>
 #include <fstream>
