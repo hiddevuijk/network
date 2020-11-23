@@ -65,10 +65,10 @@ int viNeighborSW(int vi, int Nx, int Ny)
 
 Network generateNetwork(int Nx, int Ny, double Lx)
 {
-    long int seed = 123456789;
+    long int seed = 122456789;
     boost::random::mt19937 rng(seed);
-    boost::random::uniform_int_distribution<int> randX(1,Nx-1);
-    boost::random::uniform_int_distribution<int> randY(1,Ny-1);
+    boost::random::uniform_int_distribution<int> randX(0,Nx-1);
+    boost::random::uniform_int_distribution<int> randY(0,Ny-1);
 
     // Ny must be even!!
 
@@ -173,13 +173,37 @@ Network generateNetwork(int Nx, int Ny, double Lx)
 
 
     // cut every filament once
-    //for(int yi=0; yi<Ny; ++yi) {
-    //    int xi = randX(rng);
-    //    int vi = xy2v(xi,yi,Nx,Ny);
-    //    int viNext = viNeighborE(vi,Nx,Ny);
-    //    std::cout << vi << '\t' << viNext << '\n';
-    //    net.deleteEdge(vi,viNext);
-    //}
+    // cut WE filament
+    for(int yi=0; yi<Ny; ++yi) {
+        int xi = randX(rng);
+        int vi = xy2v(xi,yi,Nx,Ny);
+        int viNext = viNeighborE(vi,Nx,Ny);
+        net.deleteEdge(vi,viNext);
+    }
+
+    // cut SE-NW filament
+    for(int xi=0; xi<Nx; ++xi) {
+        int yi = randY(rng);
+        int vi = xy2v(xi,0, Nx,Ny);
+        while( yi > 0 ) {
+            vi = viNeighborNW(vi,Nx,Ny);
+            --yi;
+        }
+        int viNext = viNeighborNW(vi,Nx,Ny);
+        net.deleteEdge(vi,viNext);
+    }
+
+    // cut SW-NE filament
+    for(int xi=0; xi<Nx; ++xi) {
+        int yi = randY(rng);
+        int vi = xy2v(xi,0, Nx,Ny);
+        while( yi > 0 ) {
+            vi = viNeighborNE(vi,Nx,Ny);
+            --yi;
+        }
+        int viNext = viNeighborNE(vi,Nx,Ny);
+        net.deleteEdge(vi,viNext);
+    }
 
 
    return net;
