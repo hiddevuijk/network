@@ -78,14 +78,41 @@ Network generateNetwork(int Nx, int Ny, double Lx)
     double dx = Lx/Nx;
     double dy = dx*std::sqrt(3./4.);
 
-    int vi; 
+    int vi, viNeighbor;
+    int xb, yb;
     for(int xi=0; xi<Nx; ++xi) {
     for(int yi=0; yi<Ny; ++yi) {
         vi = xy2v(xi,yi,Nx,Ny);
-        net.setVertexPosition( vi, xi*dx, yi*dy);
-        net.addEdge( vi, viNeighborE(xi,yi, Nx, Ny));
-        net.addEdge( vi, viNeighborSE(xi,yi, Nx, Ny));
-        net.addEdge( vi, viNeighborSW(xi,yi, Nx, Ny));
+        net.setVertexPosition( vi, xi*dx + (yi%2)*0.5*dx, yi*dy);
+
+        // add East edge
+        viNeighbor = viNeighborE(xi,yi,Nx,Ny);
+        if( xi == Nx -1 ) xb = 1;
+        else xb = 0;
+        yb = 0;
+        
+        net.addEdge( vi, viNeighbor, xb, yb, dx);
+
+        // add South-East edge
+        viNeighbor = viNeighborSE(xi,yi,Nx,Ny);
+        if( xi == Nx -1 and yi % 2 == 1) xb = 1; 
+        else xb = 0;
+        if( yi == 0 ) yb = -1;
+        else yb = 0;
+        
+        net.addEdge( vi, viNeighbor, xb, yb, dx);
+
+        // add South-West edge
+        viNeighbor = viNeighborSW(xi,yi,Nx,Ny);
+        if( xi == 0 and yi % 2 == 0 ) xb = -1; 
+        else xb = 0;
+
+        if( yi ==0 ) yb = -1;
+        else yb = 0;
+        
+        net.addEdge( vi, viNeighbor, xb, yb, dx);
+
+
     }}
 
     // add Bends
@@ -100,11 +127,11 @@ Network generateNetwork(int Nx, int Ny, double Lx)
             viNext = viNeighborE(xi,yi,Nx,Ny);
             net.addBend(vi, viPrev, viNext);
         } 
-        for(int xi=0; xi<Nx; ++xi ) {
-            vi = xy2v(xi,yi,Nx,Ny); 
-            viNext = viNeighborE(xi,yi,Nx,Ny);
-            //net.polymerize(vi, viNext);
-        }
+        //for(int xi=0; xi<Nx; ++xi ) {
+        //    vi = xy2v(xi,yi,Nx,Ny); 
+        //    viNext = viNeighborE(xi,yi,Nx,Ny);
+        //    net.polymerize(vi, viNext);
+        //}
 
     }
 
@@ -117,13 +144,14 @@ Network generateNetwork(int Nx, int Ny, double Lx)
         net.addBend(vi, viPrev, viNext);
 
     }}
+
     //polymerize SW-NE bends
-    for(int yi=0; yi<Ny; ++yi ){
-    for(int xi=0; xi<Nx; ++xi ) {
-        vi = xy2v(xi,yi,Nx,Ny);
-        viNext = viNeighborNE(vi,Nx,Ny);  
-        //net.polymerize(vi, viNext);
-    }}
+    //for(int yi=0; yi<Ny; ++yi ){
+    //for(int xi=0; xi<Nx; ++xi ) {
+    //    vi = xy2v(xi,yi,Nx,Ny);
+    //    viNext = viNeighborNE(vi,Nx,Ny);  
+    //    net.polymerize(vi, viNext);
+    //}}
 
     // add SE-NW bends
     for(int yi=0; yi<Ny; ++yi ){
@@ -135,23 +163,23 @@ Network generateNetwork(int Nx, int Ny, double Lx)
 
     }}
     //polymerize SE-NW bends
-    for(int yi=0; yi<Ny; ++yi ){
-    for(int xi=0; xi<Nx; ++xi ) {
-        vi = xy2v(xi,yi,Nx,Ny);
-        viNext = viNeighborNW(vi,Nx,Ny);  
-        //net.polymerize(vi, viNext);
-    }}
+    //for(int yi=0; yi<Ny; ++yi ){
+    //for(int xi=0; xi<Nx; ++xi ) {
+    //    vi = xy2v(xi,yi,Nx,Ny);
+    //    viNext = viNeighborNW(vi,Nx,Ny);  
+    //    //net.polymerize(vi, viNext);
+    //}}
 
 
 
     // cut every filament once
-    for(int yi=0; yi<Ny; ++yi) {
-        int xi = randX(rng);
-        int vi = xy2v(xi,yi,Nx,Ny);
-        int viNext = viNeighborE(vi,Nx,Ny);
-        std::cout << vi << '\t' << viNext << '\n';
-        //net.deleteEdge(vi,viNext);
-    }
+    //for(int yi=0; yi<Ny; ++yi) {
+    //    int xi = randX(rng);
+    //    int vi = xy2v(xi,yi,Nx,Ny);
+    //    int viNext = viNeighborE(vi,Nx,Ny);
+    //    std::cout << vi << '\t' << viNext << '\n';
+    //    net.deleteEdge(vi,viNext);
+    //}
 
 
    return net;
