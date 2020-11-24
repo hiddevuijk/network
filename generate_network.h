@@ -127,11 +127,11 @@ Network generateNetwork(int Nx, int Ny, double Lx)
             viNext = viNeighborE(xi,yi,Nx,Ny);
             net.addBend(vi, viPrev, viNext);
         } 
-        //for(int xi=0; xi<Nx; ++xi ) {
-        //    vi = xy2v(xi,yi,Nx,Ny); 
-        //    viNext = viNeighborE(xi,yi,Nx,Ny);
-        //    net.polymerize(vi, viNext);
-        //}
+        for(int xi=0; xi<Nx; ++xi ) {
+            vi = xy2v(xi,yi,Nx,Ny); 
+            viNext = viNeighborE(xi,yi,Nx,Ny);
+            net.polymerize(vi, viNext);
+        }
 
     }
 
@@ -146,12 +146,12 @@ Network generateNetwork(int Nx, int Ny, double Lx)
     }}
 
     //polymerize SW-NE bends
-    //for(int yi=0; yi<Ny; ++yi ){
-    //for(int xi=0; xi<Nx; ++xi ) {
-    //    vi = xy2v(xi,yi,Nx,Ny);
-    //    viNext = viNeighborNE(vi,Nx,Ny);  
-    //    net.polymerize(vi, viNext);
-    //}}
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viNext = viNeighborNE(vi,Nx,Ny);  
+        net.polymerize(vi, viNext);
+    }}
 
     // add SE-NW bends
     for(int yi=0; yi<Ny; ++yi ){
@@ -159,16 +159,16 @@ Network generateNetwork(int Nx, int Ny, double Lx)
         vi = xy2v(xi,yi,Nx,Ny);
         viPrev = viNeighborSE(vi,Nx,Ny);  
         viNext = viNeighborNW(vi,Nx,Ny);  
-        net.addBend(vi, viPrev, viNext);
+        //net.addBend(vi, viPrev, viNext);
 
     }}
     //polymerize SE-NW bends
-    //for(int yi=0; yi<Ny; ++yi ){
-    //for(int xi=0; xi<Nx; ++xi ) {
-    //    vi = xy2v(xi,yi,Nx,Ny);
-    //    viNext = viNeighborNW(vi,Nx,Ny);  
-    //    //net.polymerize(vi, viNext);
-    //}}
+    for(int yi=0; yi<Ny; ++yi ){
+    for(int xi=0; xi<Nx; ++xi ) {
+        vi = xy2v(xi,yi,Nx,Ny);
+        viNext = viNeighborNW(vi,Nx,Ny);  
+        net.polymerize(vi, viNext);
+    }}
 
 
 

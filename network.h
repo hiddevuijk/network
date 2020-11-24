@@ -19,12 +19,12 @@
 #include <sstream>
 
 class Network {
-  public:
-
+  private:
     class Vertex;
     class Edge;
     class Bend;
 
+  public:
 
     Network();
     Network(int Nv);
@@ -62,7 +62,7 @@ class Network {
     void showBends() const;
     void showPolymers();
 
-
+  private:
     class Vertex {
       public:
         Vertex(): index(-1) {}
@@ -118,7 +118,6 @@ class Network {
         double theta0;
     };
 
-    private:
         std::vector<Vertex*> vertices;
 
         void deleteVertex(int i);
