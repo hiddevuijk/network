@@ -223,20 +223,58 @@ void Network::polymerize( int i, int j)
 { polymerize(vertices[i], vertices[j] ); }
 
 void Network::depolymerize( Bend *bi, Bend *bj)
-{ } 
+{ 
+    if( bi == nullptr or bj == nullptr ) return;
+    if( bi->nextBend != bj or bj->prevBend != bi) return;
+    bi->nextBend = nullptr;
+    bj->prevBend = nullptr;
+} 
 
 void Network::depolymerize( Bend *b)
-{ }
+{ 
+    if( b == nullptr ) return;
+    if( b->nextBend != nullptr ) {
+        b->nextBend->prevBend = nullptr;
+        b->nextBend = nullptr;
+    }
+    if( b->prevBend != nullptr ) {
+        b->prevBend->nextBend = nullptr;
+        b->prevBend = nullptr;
+    }
+}
 
 void Network::depolymerize( Vertex *vi)
-{ }
+{
+    std::vector<Bend*>::iterator it_b = vi->bends.begin();
+    while( it_b != vi->bends.end() ) {
+        depolymerize(*it_b);
+        ++it_b;
+    }
+}
 
 void Network::depolymerize(int i)
 { depolymerize(vertices[i]); }
 
 
 void Network::depolymerize( Vertex *vi, Vertex *vj)
-{ }
+{
+    // find bend from vi to vj
+    std::vector<Bend*>::iterator it_b = vi->bends.begin();
+    while( it_b != vi->bends.end() ) {
+        if( (*it_b)->a->to == vj or (*it_b)->b->to == vj ) break; 
+        ++it_b;
+    }
+
+    // do nothing if bend not found
+    if( it_b == vi->bends.end() ) return;
+
+    if( (*it_b)->nextBend != nullptr and (*it_b)->nextBend->mid == vj ) {
+        depolymerize( *it_b, (*it_b)->nextBend );
+    } else if( (*it_b)->prevBend != nullptr and (*it_b)->prevBend->mid == vi ) {
+        depolymerize( (*it_b)->prevBend, *it_b );
+    }
+
+}
 
 void Network::depolymerize(int i, int j)
 { depolymerize( vertices[i], vertices[j]); }
