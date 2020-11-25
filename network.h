@@ -32,6 +32,9 @@ class Network {
     ~Network();
 
     void write( std::ofstream& out);
+
+    std::vector<Vertex*>::size_type Nvertices() const { return vertices.size(); };
+
     int addVertex();
     int addVertex(double x, double y);
 
@@ -39,6 +42,8 @@ class Network {
 
     void addEdge(int i, int j, int xb=0, int yb=0, double l0=0);
     void deleteEdge(int i, int j);
+
+    void prune(int i);
 
     void addBend(int mid, int va, int vb);
     void deleteBend(int mid, int va);
@@ -49,8 +54,7 @@ class Network {
     void depolymerize(int i); // test // remove from all polymers
 
     // this changes the indices!!!
-    //void removeUnconectedVertices(); // --
-    // ....
+    void removeUnconnectedVertices(); 
 
     std::vector<std::vector<int> > getEdges() const;
     std::vector<std::vector<int> > getBends() const;
@@ -122,12 +126,15 @@ class Network {
 
         void deleteVertex(int i);
         void deleteVertex(Vertex *vi);
+        void prune( Vertex *vi);
+
         void exchangeVertex(int i, int j);
         void exchangeVertex(Vertex *vi, Vertex *vj);
 
         void addEdge(Vertex *vi, Vertex *vj, int xb=0, int yb=0, double l0=0);
         void deleteEdge(Vertex *vi, Vertex *vj);
         void deleteEdge( std::vector<Edge*>::iterator it);
+        void deleteAllEdges( Vertex *vi );
 
         void addBend(Vertex *mid, Vertex *prev, Vertex *next);
         void addBend(Vertex *mid, Edge *a, Edge *b);
@@ -180,6 +187,30 @@ int Network::addVertex(double x, double y)
     vertices.push_back( new Vertex(Nv, x, y) );
     return Nv;
 }
+
+void Network::deleteVertex(int i)
+{ deleteVertex( vertices[i] ); }
+
+void Network::deleteVertex(Vertex *vi)
+{
+    deleteAllEdges(vi); 
+    exchangeVertex( vi, vertices.back() ); 
+    delete vertices.back();
+    vertices.pop_back();
+}
+void Network::exchangeVertex(int i, int j)
+{ exchangeVertex( vertices[i], vertices[j] ); }
+
+void Network::exchangeVertex(Vertex *vi, Vertex *vj)
+{
+    int i = vi->index;
+    int j = vj->index;
+    vertices[i] = vj;
+    vertices[i]->index = i;
+    vertices[j] = vi;
+    vertices[j]->index = j;
+}
+
 
 void Network::setVertexPosition(int i, double x, double y)
 {
@@ -403,6 +434,14 @@ void Network::deleteEdge( std::vector<Edge*>::iterator it)
     *it = temp->from->edges.back();
     temp->from->edges.pop_back();
     delete temp;
+}
+
+
+void Network::deleteAllEdges( Vertex *vi )
+{
+    while( vi->edges.size() > 0 ) {
+        deleteEdge( vi->edges.end() - 1 );
+    }
 }
 
 Network::Vertex::~Vertex()
@@ -766,5 +805,28 @@ Network::Network( std::ifstream& in)
     } 
 }
 
+void Network::prune( int i)
+{ prune( vertices[i] ); }
 
+void Network::prune(Vertex *vi)
+{
+    if( vi->edges.size() == 1 ){
+        deleteEdge( vi, vi->edges[0]->to );
+        prune( vi->edges[0]->to );
+    }
+}
+
+void Network::removeUnconnectedVertices()
+{
+    std::vector<Vertex*>::iterator it_v = vertices.begin();
+    while( it_v != vertices.end() ) {
+        if( (*it_v)->edges.size() == 0 ) {
+            deleteVertex(*it_v);
+        } else {
+            ++it_v;
+        }
+    }
+
+
+}
 #endif

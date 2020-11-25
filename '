@@ -63,20 +63,17 @@ int viNeighborSW(int vi, int Nx, int Ny)
 template<class V>
 void shuffle( V& v, boost::random::mt19937 & rng)
 {
-    auto temp = v[0];
-    for( long unsigned int i=0;i<v.size(); ++i) {
-        boost::random::uniform_int_distribution<int> rand(i, v.size() );
-        int j = rand(rng);
-        temp = v[i];
-        v[i] = v[j];
-        v[j] = temp;
-    }
+    boost::random::unifrom_int_distribution<int> rand(0, v.size() );
+   
+    auto temp; 
+
+
 }
 
 
 
 
-Network generateNetwork(int Nx, int Ny, double Lx, double z)
+Network generateNetwork(int Nx, int Ny, double Lx)
 {
     long int seed = 122456789;
     boost::random::mt19937 rng(seed);
@@ -218,22 +215,8 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         net.deleteEdge(vi,viNext);
     }
 
-    std::vector<std::vector<int> > edges = net.getEdges();
-    shuffle(edges, rng);
 
-
-    int i=0;
-    // edges removed by pruning are not removed from edges list!!
-    while( net.averageConnectivity() > z ) {
-        net.deleteEdge( edges[i][0], edges[i][1] );
-        net.prune( edges[i][0]);
-        net.prune( edges[i][1]);
-        ++i;
-    }
-    net.removeUnconnectedVertices();
-    net.removeUnconnectedVertices();
-
-    return net;
+   return net;
 
 }
 

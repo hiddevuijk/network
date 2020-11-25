@@ -6,9 +6,7 @@ topology = open('topology.txt')
 lines = topology.readlines()
 topology.close()
 
-Nx = 4
-Ny = 4
-Lx = 4
+Lx = 6.
 Ly = Lx*np.sqrt(3/4.)
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
