@@ -1,6 +1,7 @@
 
 #include "graph.h"
 #include "generate_graph.h"
+#include "network.h"
 
 #include <iostream>
 #include <fstream>

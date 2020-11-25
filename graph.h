@@ -39,6 +39,7 @@ class Graph {
     int addVertex(double x, double y);
 
     void setVertexPosition(int i, double x, double y);
+    vec2 getVertexPosition(int i) const { return vertices[i]->r; }
 
     void addEdge(int i, int j, int xb=0, int yb=0, double l0=0);
     void deleteEdge(int i, int j);
@@ -56,6 +57,7 @@ class Graph {
     // this changes the indices!!!
     void removeUnconnectedVertices(); 
 
+    std::vector<vec2> getPositions() const;
     std::vector<std::vector<int> > getEdges() const;
     std::vector<std::vector<int> > getBends() const;
     std::vector<std::vector<int> > getPolymers();
@@ -493,6 +495,15 @@ void Graph::showBends() const
 }
 
 
+std::vector<vec2> Graph::getPositions() const
+{
+    std::vector<vec2> positions(vertices.size() );
+    for(unsigned long int vi=0;vi<vertices.size(); ++vi) {
+        positions[vi] = vertices[vi]->r;
+    }
+
+    return positions;
+}
 
 std::vector<std::vector<int> > Graph::getEdges() const
 {
