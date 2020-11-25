@@ -1,5 +1,5 @@
-#ifndef GUARD_NETWORK_H
-#define GUARD_NETWORK_H
+#ifndef GUARD_GRAPH_H
+#define GUARD_GRAPH_H
 
 
 /*
@@ -18,7 +18,7 @@
 #include <string>
 #include <sstream>
 
-class Network {
+class Graph {
   private:
     class Vertex;
     class Edge;
@@ -26,10 +26,10 @@ class Network {
 
   public:
 
-    Network();
-    Network(int Nv);
-    Network ( std::ifstream& in);
-    ~Network();
+    Graph();
+    Graph(int Nv);
+    Graph ( std::ifstream& in);
+    ~Graph();
 
     void write( std::ofstream& out);
 
@@ -155,9 +155,9 @@ class Network {
         Bend* firstBend( Bend *bend) const;
 };
 
-Network::Network() {};
+Graph::Graph() {};
 
-Network::Network( int Nv)
+Graph::Graph( int Nv)
 : vertices( std::vector<Vertex*>(Nv, nullptr) )
 {
     for( int vi=0; vi<Nv; ++vi) {
@@ -166,7 +166,7 @@ Network::Network( int Nv)
 }
 
 
-Network::~Network()
+Graph::~Graph()
 { 
     for( std::vector<Vertex*>::size_type vi=0; vi < vertices.size(); ++vi) {
         delete vertices[vi];
@@ -174,34 +174,34 @@ Network::~Network()
     }
 }
 
-int Network::addVertex()
+int Graph::addVertex()
 {
     std::vector<Vertex*>::size_type  Nv = vertices.size();
     vertices.push_back( new Vertex(Nv) );
     return Nv;
 }
 
-int Network::addVertex(double x, double y)
+int Graph::addVertex(double x, double y)
 {
     std::vector<Vertex*>::size_type  Nv = vertices.size();
     vertices.push_back( new Vertex(Nv, x, y) );
     return Nv;
 }
 
-void Network::deleteVertex(int i)
+void Graph::deleteVertex(int i)
 { deleteVertex( vertices[i] ); }
 
-void Network::deleteVertex(Vertex *vi)
+void Graph::deleteVertex(Vertex *vi)
 {
     deleteAllEdges(vi); 
     exchangeVertex( vi, vertices.back() ); 
     delete vertices.back();
     vertices.pop_back();
 }
-void Network::exchangeVertex(int i, int j)
+void Graph::exchangeVertex(int i, int j)
 { exchangeVertex( vertices[i], vertices[j] ); }
 
-void Network::exchangeVertex(Vertex *vi, Vertex *vj)
+void Graph::exchangeVertex(Vertex *vi, Vertex *vj)
 {
     int i = vi->index;
     int j = vj->index;
@@ -212,13 +212,13 @@ void Network::exchangeVertex(Vertex *vi, Vertex *vj)
 }
 
 
-void Network::setVertexPosition(int i, double x, double y)
+void Graph::setVertexPosition(int i, double x, double y)
 {
     vertices[i]->r.x = x;
     vertices[i]->r.y = y;
 }
 
-void Network::polymerize( Bend *bi, Bend *bj)
+void Graph::polymerize( Bend *bi, Bend *bj)
 {
     if( bi == nullptr or bj == nullptr ) return;
     // ERROR if bi->nextBend != nullptr or bj->prevBend != nullptr
@@ -227,7 +227,7 @@ void Network::polymerize( Bend *bi, Bend *bj)
     bj->prevBend = bi;
 }
 
-void Network::polymerize( Vertex *vi, Vertex *vj )
+void Graph::polymerize( Vertex *vi, Vertex *vj )
 {
     // find the bend in vi that goes to vj
     std::vector<Bend*>::iterator it_bi = vi->bends.begin();
@@ -249,10 +249,10 @@ void Network::polymerize( Vertex *vi, Vertex *vj )
     polymerize(*it_bi, *it_bj);
 }
 
-void Network::polymerize( int i, int j)
+void Graph::polymerize( int i, int j)
 { polymerize(vertices[i], vertices[j] ); }
 
-void Network::depolymerize( Bend *bi, Bend *bj)
+void Graph::depolymerize( Bend *bi, Bend *bj)
 { 
     if( bi == nullptr or bj == nullptr ) return;
     if( bi->nextBend != bj or bj->prevBend != bi) return;
@@ -260,7 +260,7 @@ void Network::depolymerize( Bend *bi, Bend *bj)
     bj->prevBend = nullptr;
 } 
 
-void Network::depolymerize( Bend *b)
+void Graph::depolymerize( Bend *b)
 { 
     if( b == nullptr ) return;
     if( b->nextBend != nullptr ) {
@@ -273,7 +273,7 @@ void Network::depolymerize( Bend *b)
     }
 }
 
-void Network::depolymerize( Vertex *vi)
+void Graph::depolymerize( Vertex *vi)
 {
     std::vector<Bend*>::iterator it_b = vi->bends.begin();
     while( it_b != vi->bends.end() ) {
@@ -282,11 +282,11 @@ void Network::depolymerize( Vertex *vi)
     }
 }
 
-void Network::depolymerize(int i)
+void Graph::depolymerize(int i)
 { depolymerize(vertices[i]); }
 
 
-void Network::depolymerize( Vertex *vi, Vertex *vj)
+void Graph::depolymerize( Vertex *vi, Vertex *vj)
 {
     // find bend from vi to vj
     std::vector<Bend*>::iterator it_b = vi->bends.begin();
@@ -306,21 +306,21 @@ void Network::depolymerize( Vertex *vi, Vertex *vj)
 
 }
 
-void Network::depolymerize(int i, int j)
+void Graph::depolymerize(int i, int j)
 { depolymerize( vertices[i], vertices[j]); }
 
 
 
-void Network::addBend(Vertex *mid, Edge *a, Edge *b)
+void Graph::addBend(Vertex *mid, Edge *a, Edge *b)
 {
     Bend* bend = new Bend( mid,a,b,mid->bends.size() );
     mid->bends.push_back( bend );
 }
 
-void Network::addBend(int mid, int va, int vb)
+void Graph::addBend(int mid, int va, int vb)
 { addBend( vertices[mid], vertices[va], vertices[vb]); }
 
-void Network::addBend(Vertex *mid, Vertex *va, Vertex *vb)
+void Graph::addBend(Vertex *mid, Vertex *va, Vertex *vb)
 {
 
     // in edges of mid, find mid-va and mid-vb 
@@ -339,7 +339,7 @@ void Network::addBend(Vertex *mid, Vertex *va, Vertex *vb)
     // ERROR: NO EDGE ADDED
 }
 
-void Network::deleteBend( std::vector<Bend*>::iterator it_bend)
+void Graph::deleteBend( std::vector<Bend*>::iterator it_bend)
 {
     depolymerize( *it_bend);
     // move last bend pointer to current location in the bend list
@@ -351,7 +351,7 @@ void Network::deleteBend( std::vector<Bend*>::iterator it_bend)
     
 }
 
-void Network::deleteBend(Bend *bend)
+void Graph::deleteBend(Bend *bend)
 {
     if( bend == nullptr ) return;
 
@@ -362,7 +362,7 @@ void Network::deleteBend(Bend *bend)
 }
 
 
-void Network::deleteBend(Vertex *mid, Vertex *va)
+void Graph::deleteBend(Vertex *mid, Vertex *va)
 {
     std::vector<Bend*>::iterator it_b = mid->bends.begin();
     while( it_b != mid->bends.end() ) {
@@ -375,23 +375,23 @@ void Network::deleteBend(Vertex *mid, Vertex *va)
     
 }
 
-void Network::deleteBend(int mid, int va)
+void Graph::deleteBend(int mid, int va)
 { deleteBend( vertices[mid], vertices[va]); }
 
 
-void Network::deleteAllBend(int vi, int vj)
+void Graph::deleteAllBend(int vi, int vj)
 { deleteAllBend( vertices[vi], vertices[vj]); }
 
-void Network::deleteAllBend(Vertex *vi, Vertex *vj)
+void Graph::deleteAllBend(Vertex *vi, Vertex *vj)
 {
     deleteBend(vi,vj);
     deleteBend(vj,vi);
 }
 
-void Network::addEdge(int i, int j, int xb, int yb, double l0)
+void Graph::addEdge(int i, int j, int xb, int yb, double l0)
 { addEdge( vertices[i], vertices[j], xb, yb, l0); }
 
-void Network::addEdge(Vertex *vi, Vertex *vj, int xb, int yb, double l0)
+void Graph::addEdge(Vertex *vi, Vertex *vj, int xb, int yb, double l0)
 {
     // check if already exists??
     vi->edges.push_back( new Edge(vi,vj,xb,yb,l0) );
@@ -399,10 +399,10 @@ void Network::addEdge(Vertex *vi, Vertex *vj, int xb, int yb, double l0)
 
 }
 
-void Network::deleteEdge(int vi, int vj)
+void Graph::deleteEdge(int vi, int vj)
 { deleteEdge(vertices[vi], vertices[vj]); }
 
-void Network::deleteEdge(Vertex *vi, Vertex *vj)
+void Graph::deleteEdge(Vertex *vi, Vertex *vj)
 {
     // find the edge from vi to vj
     std::vector<Edge*>::iterator it_e = vi->edges.begin();
@@ -424,7 +424,7 @@ void Network::deleteEdge(Vertex *vi, Vertex *vj)
     
 }
 
-void Network::deleteEdge( std::vector<Edge*>::iterator it)
+void Graph::deleteEdge( std::vector<Edge*>::iterator it)
 {
 
     // delete the corresponding bend
@@ -437,14 +437,14 @@ void Network::deleteEdge( std::vector<Edge*>::iterator it)
 }
 
 
-void Network::deleteAllEdges( Vertex *vi )
+void Graph::deleteAllEdges( Vertex *vi )
 {
     while( vi->edges.size() > 0 ) {
         deleteEdge( vi->edges.end() - 1 );
     }
 }
 
-Network::Vertex::~Vertex()
+Graph::Vertex::~Vertex()
 {
     //delete edges
     for( std::vector<Edge*>::size_type ei=0;ei<edges.size(); ++ei) {
@@ -458,7 +458,7 @@ Network::Vertex::~Vertex()
     }
 }
 
-void Network::showAdj() const
+void Graph::showAdj() const
 {
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
     std::vector<Edge*>::const_iterator it_e;
@@ -474,7 +474,7 @@ void Network::showAdj() const
     }
 }
 
-void Network::showBends() const
+void Graph::showBends() const
 {
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
     std::vector<Bend*>::const_iterator it_b;
@@ -494,7 +494,7 @@ void Network::showBends() const
 
 
 
-std::vector<std::vector<int> > Network::getEdges() const
+std::vector<std::vector<int> > Graph::getEdges() const
 {
     std::vector<std::vector<int> > edges;
     std::vector<int> edge(5);
@@ -519,7 +519,7 @@ std::vector<std::vector<int> > Network::getEdges() const
     return edges;
 }
 
-std::vector<std::vector<int> > Network::getBends() const
+std::vector<std::vector<int> > Graph::getBends() const
 {
 
     std::vector<std::vector<int> > bends;
@@ -547,7 +547,7 @@ std::vector<std::vector<int> > Network::getBends() const
     return bends; 
 }
 
-double Network::averageConnectivity() const
+double Graph::averageConnectivity() const
 {
     int Nv = 0; // number of vertices with at least one bond
     double avgc = 0;
@@ -564,7 +564,7 @@ double Network::averageConnectivity() const
 }
 
 
-Network::Bend* Network::firstBend( Bend *bend) const
+Graph::Bend* Graph::firstBend( Bend *bend) const
 {
     if( bend == nullptr ) return nullptr;
     Bend *first = bend;
@@ -575,7 +575,7 @@ Network::Bend* Network::firstBend( Bend *bend) const
     return bend;
 }
 
-std::vector<std::vector<int> > Network::getPolymers() 
+std::vector<std::vector<int> > Graph::getPolymers() 
 {
     std::vector<std::vector<int> > polymers;
     polymers.push_back( std::vector<int>() );
@@ -631,7 +631,7 @@ std::vector<std::vector<int> > Network::getPolymers()
     return polymers;
 }
 
-void Network::resetFilamentIndex()
+void Graph::resetFilamentIndex()
 {
     std::vector<Vertex*>::const_iterator it_v = vertices.begin();
     std::vector<Bend*>::const_iterator it_b;
@@ -646,7 +646,7 @@ void Network::resetFilamentIndex()
 }
 
 
-void Network::showPolymers()
+void Graph::showPolymers()
 {
     std::vector<std::vector<int> > p = getPolymers();
     std::vector<std::vector<int> >::iterator it_p = p.begin();
@@ -663,7 +663,7 @@ void Network::showPolymers()
 }
 
 
-Network::Vertex* Network::Bend::previousVertex() const
+Graph::Vertex* Graph::Bend::previousVertex() const
 {
     if( prevBend != nullptr ) return prevBend->mid;
 
@@ -673,7 +673,7 @@ Network::Vertex* Network::Bend::previousVertex() const
     return a->to;
 }
 
-Network::Vertex* Network::Bend::nextVertex() const
+Graph::Vertex* Graph::Bend::nextVertex() const
 {
     if( nextBend != nullptr ) return nextBend->mid;
 
@@ -684,7 +684,7 @@ Network::Vertex* Network::Bend::nextVertex() const
     return a->to;
 }
 
-void Network::write( std::ofstream& out) 
+void Graph::write( std::ofstream& out) 
 {
     std::vector<std::vector<int> > edges = getEdges();
     std::vector<std::vector<int> > bends = getBends();
@@ -745,7 +745,7 @@ void Network::write( std::ofstream& out)
  
 }
 
-Network::Network( std::ifstream& in) 
+Graph::Graph( std::ifstream& in) 
 {
     int Nv, Ne, Nb, Np; 
     in >> Nv;
@@ -805,10 +805,10 @@ Network::Network( std::ifstream& in)
     } 
 }
 
-void Network::prune( int i)
+void Graph::prune( int i)
 { prune( vertices[i] ); }
 
-void Network::prune(Vertex *vi)
+void Graph::prune(Vertex *vi)
 {
     if( vi->edges.size() == 1 ){
         deleteEdge( vi, vi->edges[0]->to );
@@ -816,7 +816,7 @@ void Network::prune(Vertex *vi)
     }
 }
 
-void Network::removeUnconnectedVertices()
+void Graph::removeUnconnectedVertices()
 {
     std::vector<Vertex*>::iterator it_v = vertices.begin();
     while( it_v != vertices.end() ) {

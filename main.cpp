@@ -1,6 +1,6 @@
 
-#include "network.h"
-#include "generate_network.h"
+#include "graph.h"
+#include "generate_graph.h"
 
 #include <iostream>
 #include <fstream>
@@ -17,13 +17,13 @@ int main()
     int Lx = 6;
     double z = 3.4;
 
-    Network net = generateNetwork(Nx,Ny,Lx,z);
+    Graph graph = generateGraph(Nx,Ny,Lx,z);
     
 
     cout << "Network done ..." << endl;
-    cout << net.averageConnectivity() << endl;
+    cout << graph.averageConnectivity() << endl;
     ofstream out("topology.txt");
-    net.write(out);
+    graph.write(out);
     out.close();
 
     return 0;

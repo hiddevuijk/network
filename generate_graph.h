@@ -1,7 +1,7 @@
-#ifndef GUARD_GENERATE_NETWORK_H
-#define GUARD_GENERATE_NETWORK_H
+#ifndef GUARD_GENERATE_GRAPH_H
+#define GUARD_GENERATE_GRAPH_H
 
-#include "network.h"
+#include "graph.h"
 
 
 #include "boost/random.hpp"
@@ -78,7 +78,7 @@ void shuffle( V& v, boost::random::mt19937 & rng)
 
 
 
-Network generateNetwork(int Nx, int Ny, double Lx, double z)
+Graph generateGraph(int Nx, int Ny, double Lx, double z)
 {
     long int seed = 122456789;
     boost::random::mt19937 rng(seed);
@@ -88,7 +88,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
     // Ny must be even!!
 
     int Nv = Nx*Ny; // number of vertices
-    Network net(Nv);
+    Graph graph(Nv);
      
     double dx = Lx/Nx;
     double dy = dx*std::sqrt(3./4.);
@@ -98,7 +98,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
     for(int xi=0; xi<Nx; ++xi) {
     for(int yi=0; yi<Ny; ++yi) {
         vi = xy2v(xi,yi,Nx,Ny);
-        net.setVertexPosition( vi, xi*dx + (yi%2)*0.5*dx, yi*dy);
+        graph.setVertexPosition( vi, xi*dx + (yi%2)*0.5*dx, yi*dy);
 
         // add East edge
         viNeighbor = viNeighborE(xi,yi,Nx,Ny);
@@ -106,7 +106,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         else xb = 0;
         yb = 0;
         
-        net.addEdge( vi, viNeighbor, xb, yb, dx);
+        graph.addEdge( vi, viNeighbor, xb, yb, dx);
 
         // add South-East edge
         viNeighbor = viNeighborSE(xi,yi,Nx,Ny);
@@ -115,7 +115,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         if( yi == 0 ) yb = -1;
         else yb = 0;
         
-        net.addEdge( vi, viNeighbor, xb, yb, dx);
+        graph.addEdge( vi, viNeighbor, xb, yb, dx);
 
         // add South-West edge
         viNeighbor = viNeighborSW(xi,yi,Nx,Ny);
@@ -125,7 +125,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         if( yi ==0 ) yb = -1;
         else yb = 0;
         
-        net.addEdge( vi, viNeighbor, xb, yb, dx);
+        graph.addEdge( vi, viNeighbor, xb, yb, dx);
 
 
     }}
@@ -140,12 +140,12 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
             vi = xy2v(xi,yi,Nx,Ny); 
             viPrev = viNeighborW(xi,yi,Nx,Ny);
             viNext = viNeighborE(xi,yi,Nx,Ny);
-            net.addBend(vi, viPrev, viNext);
+            graph.addBend(vi, viPrev, viNext);
         } 
         for(int xi=0; xi<Nx; ++xi ) {
             vi = xy2v(xi,yi,Nx,Ny); 
             viNext = viNeighborE(xi,yi,Nx,Ny);
-            net.polymerize(vi, viNext);
+            graph.polymerize(vi, viNext);
         }
 
     }
@@ -156,7 +156,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         vi = xy2v(xi,yi,Nx,Ny);
         viPrev = viNeighborSW(vi,Nx,Ny);  
         viNext = viNeighborNE(vi,Nx,Ny);  
-        net.addBend(vi, viPrev, viNext);
+        graph.addBend(vi, viPrev, viNext);
 
     }}
 
@@ -165,7 +165,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
     for(int xi=0; xi<Nx; ++xi ) {
         vi = xy2v(xi,yi,Nx,Ny);
         viNext = viNeighborNE(vi,Nx,Ny);  
-        net.polymerize(vi, viNext);
+        graph.polymerize(vi, viNext);
     }}
 
     // add SE-NW bends
@@ -174,7 +174,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         vi = xy2v(xi,yi,Nx,Ny);
         viPrev = viNeighborSE(vi,Nx,Ny);  
         viNext = viNeighborNW(vi,Nx,Ny);  
-        net.addBend(vi, viPrev, viNext);
+        graph.addBend(vi, viPrev, viNext);
 
     }}
     //polymerize SE-NW bends
@@ -182,7 +182,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
     for(int xi=0; xi<Nx; ++xi ) {
         vi = xy2v(xi,yi,Nx,Ny);
         viNext = viNeighborNW(vi,Nx,Ny);  
-        net.polymerize(vi, viNext);
+        graph.polymerize(vi, viNext);
     }}
 
 
@@ -193,7 +193,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         int xi = randX(rng);
         int vi = xy2v(xi,yi,Nx,Ny);
         int viNext = viNeighborE(vi,Nx,Ny);
-        net.deleteEdge(vi,viNext);
+        graph.deleteEdge(vi,viNext);
     }
 
     // cut SE-NW filament
@@ -205,7 +205,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
             --yi;
         }
         int viNext = viNeighborNW(vi,Nx,Ny);
-        net.deleteEdge(vi,viNext);
+        graph.deleteEdge(vi,viNext);
     }
 
     // cut SW-NE filament
@@ -217,24 +217,24 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
             --yi;
         }
         int viNext = viNeighborNE(vi,Nx,Ny);
-        net.deleteEdge(vi,viNext);
+        graph.deleteEdge(vi,viNext);
     }
 
-    std::vector<std::vector<int> > edges = net.getEdges();
+    std::vector<std::vector<int> > edges = graph.getEdges();
     shuffle(edges, rng);
 
 
     int i=0;
     // edges removed by pruning are not removed from edges list!!
-    while( net.averageConnectivity() > z ) {
-        net.deleteEdge( edges[i][0], edges[i][1] );
-        net.prune( edges[i][0]);
-        net.prune( edges[i][1]);
+    while( graph.averageConnectivity() > z ) {
+        graph.deleteEdge( edges[i][0], edges[i][1] );
+        graph.prune( edges[i][0]);
+        graph.prune( edges[i][1]);
         ++i;
     }
-    net.removeUnconnectedVertices();
+    graph.removeUnconnectedVertices();
 
-    return net;
+    return graph;
 
 }
 
