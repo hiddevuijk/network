@@ -60,6 +60,8 @@ int viNeighborSE(int vi, int Nx, int Ny)
 int viNeighborSW(int vi, int Nx, int Ny)
 { return viNeighborSW( v2x(vi,Nx), v2y(vi,Nx), Nx, Ny); }
 
+
+
 template<class V>
 void shuffle( V& v, boost::random::mt19937 & rng)
 {
@@ -172,7 +174,7 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         vi = xy2v(xi,yi,Nx,Ny);
         viPrev = viNeighborSE(vi,Nx,Ny);  
         viNext = viNeighborNW(vi,Nx,Ny);  
-        //net.addBend(vi, viPrev, viNext);
+        net.addBend(vi, viPrev, viNext);
 
     }}
     //polymerize SE-NW bends
@@ -230,7 +232,6 @@ Network generateNetwork(int Nx, int Ny, double Lx, double z)
         net.prune( edges[i][1]);
         ++i;
     }
-    net.removeUnconnectedVertices();
     net.removeUnconnectedVertices();
 
     return net;

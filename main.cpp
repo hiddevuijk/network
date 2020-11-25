@@ -12,10 +12,10 @@ using namespace std;
 int main()
 {
     
-    int Nx = 6;
-    int Ny = 6;
+    int Nx = 10;
+    int Ny = 10;
     int Lx = 6;
-    double z = 3;
+    double z = 3.4;
 
     Network net = generateNetwork(Nx,Ny,Lx,z);
     
