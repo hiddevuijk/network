@@ -15,14 +15,8 @@ class Network
 
   public:
     Network(Graph);
-    std::vector<vec2> initPositions;
-    std::vector<Edge> edges;
-    std::vector<Bend> bends;
 
-    void forces( const std::vector<vec2>& positions, 
-                std::vector<vec2>& forces);
-
-    
+    void shear(double delta_gamma); 
 
   private:
     class Edge{
@@ -34,12 +28,24 @@ class Network
     class Bend{
     };
 
+    void minimize();
+
+    void forces( const std::vector<vec2>& positions, 
+                std::vector<vec2>& forces);
     void forceEdge( int ei, const std::vector<vec2> &p,
                     std::vector<vec2> &f);
+
+    std::vector<vec2> initPositions;
+    std::vector<vec2> positions;
+    std::vector<Edge> edges;
+    std::vector<Bend> bends;
+
 
     double k;
     double Lx, Ly;
     int Nv,Ne,Nb;
+
+    double gamma;
 };
 
 Network::Network(Graph g)
@@ -48,6 +54,7 @@ Network::Network(Graph g)
     initPositions = std::vector<vec2>(Nv);
     for(int vi=0; vi<Nv; ++vi ) {
         initPositions[vi] = g.getVertexPosition(vi);
+        positions[vi] = initPositions[vi];
     }
 
     std::vector<std::vector<int> > e = g.getEdges();
@@ -100,5 +107,22 @@ void Network::forceEdge( int ei, const std::vector<vec2> &p,
     
 }
 
+void Network::shear( double delta_gamma)
+{
+    gamma += delta_gamma;
+    // affine deformation
+    for( int vi=0; vi<Nv; ++vi) {
+        positions[vi].x += delta_gamma*positions[vi].y;
+    }
+
+    minimize();
+
+}
+
+void Network::minimize()
+{
+
+
+}
 
 #endif
