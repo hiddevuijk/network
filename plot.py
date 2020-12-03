@@ -6,21 +6,32 @@ topology = open('topology.txt')
 lines = topology.readlines()
 topology.close()
 
-Lx = 6.
+Lx = 10.
 Ly = Lx*np.sqrt(3/4.)
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
 Nb = int( lines[2].strip() )
 
-xList = np.zeros( Nv )
-yList = np.zeros( Nv )
+rList = open('r.dat').readlines()
+xList = np.zeros(Nv)
+yList = np.zeros(Nv)
+
+for vi in range(Nv):
+    xy = rList[vi].strip().split('\t')
+    xList[vi] = xy[0]
+    yList[vi] = xy[1]
+
+x0List = np.zeros( Nv )
+y0List = np.zeros( Nv )
 edges = np.asarray( [ [-1]*5 ]*Ne )
 bends = np.asarray( [ [-1]*8 ]*Nb )
 
 
 for vi in range(Nv):
-    xList[vi] = lines[4+vi].strip().split('\t')[1]
-    yList[vi] = lines[4+vi].strip().split('\t')[2]
+    x0List[vi] = lines[4+vi].strip().split('\t')[1]
+    y0List[vi] = lines[4+vi].strip().split('\t')[2]
+
+
 
 
 for ei in range(Ne):

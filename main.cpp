@@ -14,19 +14,19 @@ int main()
 {
     
     int Nx = 10;
-    int Ny = 10;
-    int Lx = 6;
+    int Ny = Nx;
+    int Lx = 10;
     double z = 3.4;
 
     Graph graph = generateGraph(Nx,Ny,Lx,z);
-    
+    vector<vector<int> > edges = graph.getEdges();
+    Network network(graph);
+    network.shear(0.9);
 
-    cout << "Network done ..." << endl;
-    cout << graph.averageConnectivity() << endl;
-    ofstream out("topology.txt");
-    graph.write(out);
-    out.close();
+    network.savePositions(cout);
+
 
     return 0;
+
 }
 
