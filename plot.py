@@ -6,7 +6,7 @@ topology = open('topology.txt')
 lines = topology.readlines()
 topology.close()
 
-Lx = 10.
+Lx = 20
 Ly = Lx*np.sqrt(3/4.)
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
@@ -58,10 +58,10 @@ for ei in range(Ne):
         plt.plot( [ xto, xfrom-xb*Lx ], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
 
 
-plt.scatter(xList, yList,color='black', s=200, zorder=10)
+plt.scatter(xList, yList,color='black', s=30, zorder=10)
 
 d = 0.075
-for i in range(Nv):
-    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
+#for i in range(Nv):
+#    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
 
 plt.show()

@@ -1,6 +1,12 @@
 #ifndef GUARD_NETWORK_H
 #define GUARD_NETWORK_H
 
+/*
+to do:
+    -- write EdEnergy
+    -- destructors
+*/
+
 #include "vec2.h"
 #include "graph.h"
 #include "generate_graph.h"
@@ -27,22 +33,29 @@ class Network
     int get_Nv() const {return Nv; }
     int get_Nedges() const { return Ne; }
     int get_Nbends() const { return Nb; }
-    
+
+    double totalEnergy() const; 
     double get_edgeEnergy( int ei, const gsl_vector *r) const
-        { return edges[ei].energy(r); }
+        { return edges[ei].energy(r, this); }
+
+    void get_edgeDEnergy( int ei, const gsl_vector *r, gsl_vector *df) const
+        { return edges[ei].dEnergy(r, df, this); }
 
     std::vector<double> get_positions() const;
     void savePositions(std::ostream& out) const;
+
+    void set_k(double k);
+    void set_Lx(double Lxx);
+    void set_Ly(double Lyy);
   private:
     class Edge{
       public:
         int i,j; 
         int xb, yb;
         double l0; 
-        double k;
-        double Lx,Ly;
 
-        double energy(const gsl_vector *r) const;
+        double energy(const gsl_vector *r, const Network *net) const;
+        void dEnergy( const gsl_vector *r,  gsl_vector *df, const Network *net) const;
     };
     class Bend{
     };
@@ -57,8 +70,7 @@ class Network
 
     std::vector<Edge> edges;
     std::vector<Bend> bends;
-
-
+  public:
     double k;
     double Lx, Ly;
     int Nv,Ne,Nb;
@@ -72,7 +84,12 @@ Network::Network(const Graph& g)
     
     Nv = g.Nvertices();
 
-    T = gsl_multimin_fdfminimizer_conjugate_fr;
+    //T = gsl_multimin_fdfminimizer_conjugate_fr;
+    //T = gsl_multimin_fdfminimizer_conjugate_pr;
+    //T = gsl_multimin_fdfminimizer_vector_bfgs;
+    T = gsl_multimin_fdfminimizer_vector_bfgs2;
+    //T = gsl_multimin_fdfminimizer_steepest_descent;
+
     s = gsl_multimin_fdfminimizer_alloc(T,2*Nv);
 
     r = gsl_vector_alloc(2*Nv);
@@ -98,9 +115,6 @@ Network::Network(const Graph& g)
         edges[ei].xb = e[ei][2]; 
         edges[ei].yb = e[ei][3]; 
         edges[ei].l0 = e[ei][4]; 
-        edges[ei].k = k; 
-        edges[ei].Lx = Lx; 
-        edges[ei].Ly = Ly; 
     }
 }
 
@@ -110,8 +124,8 @@ void Network::shear( double delta_gamma )
     double x,y;
     //affine deformation
     for( int vi=0; vi<Nv; ++vi ) {
-        y = gsl_vector_get(r,2*vi+1);
         x = gsl_vector_get(r,2*vi);
+        y = gsl_vector_get(r,2*vi+1);
         gsl_vector_set( r, 2*vi, x+delta_gamma*y );
     }
     minimize();
@@ -120,7 +134,7 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.1, 1e-4);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.01, 0.1);
 
     int iter = 0;
     int status;
@@ -128,10 +142,15 @@ void Network::minimize()
         iter++;    
         status = gsl_multimin_fdfminimizer_iterate(s);
         if( status ) break;
-        std::cout << iter << std::endl;
-        status = gsl_multimin_test_gradient( s->gradient, 1e-3);
+        status = gsl_multimin_test_gradient( s->gradient, 1e-18);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
+
+    // copy to r
+    gsl_vector * x = gsl_multimin_fdfminimizer_x(s);
+    for(int i=0;i<2*Nv; ++i) {
+        gsl_vector_set(r,i, gsl_vector_get(x,i) );
+    }
 }
 
 
@@ -154,16 +173,57 @@ void Network::savePositions(std::ostream& out) const
     }
 }
 
-
-double Network::Edge::energy(const gsl_vector *r) const
+double Network::totalEnergy() const
 {
-    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) + Lx*xb;
-    double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) + Ly*yb;
-    double l = std::sqrt( dx*dx + dy*dy);
-    l -= l0;
-    return 0.5*k*l*l;
+    double e = 0;
+    for(int i=0;i<Ne;++i) {
+        e += get_edgeEnergy(i,r);
+    }
+    return e;
 }
 
+double Network::Edge::energy(const gsl_vector *r,const Network *net) const
+{
+
+    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
+    double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
+
+
+    double l = std::sqrt( dx*dx + dy*dy);
+    l -= l0;
+    return 0.5*(net->k)*l*l;
+}
+
+void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network *net) const
+{
+    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
+    double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
+    double l = std::sqrt( dx*dx + dy*dy);
+
+    dx *= (net->k)*(1-l0/l);
+    dy *= (net->k)*(1-l0/l);
+
+    double temp = gsl_vector_get(df, 2*i) + dx;
+    gsl_vector_set(df, 2*i, temp );
+
+    temp = gsl_vector_get(df, 2*j) - dx;
+    gsl_vector_set(df, 2*j, temp );
+
+    temp = gsl_vector_get(df, 2*i+1) + dy;
+    gsl_vector_set(df, 2*i+1, temp);
+
+    temp = gsl_vector_get(df, 2*j+1) - dy;
+    gsl_vector_set(df, 2*j+1, temp);
+
+}
+
+void Network::set_k(double kk)
+{ k = kk; }
+
+void Network::set_Lx(double Lxx)
+{ Lx = Lxx; }
+void Network::set_Ly(double Lyy)
+{ Ly = Lyy; }
 
 /*
     energy functions
@@ -181,7 +241,14 @@ double energy( const gsl_vector *v, void *params)
 }
 
 void dEnergy( const gsl_vector *v, void *params, gsl_vector *df)
-{ }
+{
+    
+    Network *net = (Network *) params; 
+    gsl_vector_scale( df, 0); // set all elements to 0
+    for( int ei=0; ei< net->get_Nedges(); ++ei ) {
+        net->get_edgeDEnergy(ei, v, df);
+    } 
+}
 
 void EdE( const gsl_vector *x, void *params, double *f, gsl_vector *df)
 {
