@@ -25,9 +25,53 @@ int main()
     network.set_k(1.);
     network.set_Lx(Lx);
     network.set_Ly(Ly);
-    cout << network.totalEnergy() << endl;;
-    network.shear(2.);
-    cout << network.totalEnergy() << endl;;
+    //cout << network.totalEnergy() << endl;;
+
+    double gamma = 0;
+    double gmax = 4.6;
+    double dg = gmax/5000;
+
+    while( gamma < gmax ) {
+        gamma += dg;
+        network.shear(dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma > 4.3 ) {
+        gamma -= dg;
+        network.shear(-dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma < 4.5 ) {
+        gamma += dg;
+        network.shear(dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma > 4.3 ) {
+        gamma -= dg;
+        network.shear(-dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma < 4.5 ) {
+        gamma += dg;
+        network.shear(dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma > 4.3 ) {
+        gamma -= dg;
+        network.shear(-dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
+
+    while( gamma < 4.5 ) {
+        gamma += dg;
+        network.shear(dg);
+        cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    }
 
     ofstream top("topology.txt");
     graph.write(top);

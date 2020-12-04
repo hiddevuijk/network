@@ -30,6 +30,7 @@ class Network
     Network(const Graph&);
 
     void shear(double delta_gamma); 
+    void shearAffine(double delta_gamma); 
     int get_Nv() const {return Nv; }
     int get_Nedges() const { return Ne; }
     int get_Nbends() const { return Nb; }
@@ -76,7 +77,7 @@ class Network
     int Nv,Ne,Nb;
 
     double gamma;
-    double maxIter = 100;
+    int maxIter = 1000000;
 };
 
 Network::Network(const Graph& g)
@@ -84,10 +85,10 @@ Network::Network(const Graph& g)
     
     Nv = g.Nvertices();
 
-    //T = gsl_multimin_fdfminimizer_conjugate_fr;
+    T = gsl_multimin_fdfminimizer_conjugate_fr;
     //T = gsl_multimin_fdfminimizer_conjugate_pr;
     //T = gsl_multimin_fdfminimizer_vector_bfgs;
-    T = gsl_multimin_fdfminimizer_vector_bfgs2;
+    //T = gsl_multimin_fdfminimizer_vector_bfgs2;
     //T = gsl_multimin_fdfminimizer_steepest_descent;
 
     s = gsl_multimin_fdfminimizer_alloc(T,2*Nv);
@@ -118,7 +119,7 @@ Network::Network(const Graph& g)
     }
 }
 
-void Network::shear( double delta_gamma )
+void Network::shearAffine( double delta_gamma )
 {
     gamma += delta_gamma;
     double x,y;
@@ -128,13 +129,21 @@ void Network::shear( double delta_gamma )
         y = gsl_vector_get(r,2*vi+1);
         gsl_vector_set( r, 2*vi, x+delta_gamma*y );
     }
+
+    minimize();
+}
+
+
+void Network::shear( double delta_gamma )
+{
+    gamma += delta_gamma;
     minimize();
 }
 
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.01, 0.1);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.01, 0.05);
 
     int iter = 0;
     int status;
@@ -145,6 +154,7 @@ void Network::minimize()
         status = gsl_multimin_test_gradient( s->gradient, 1e-18);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
+    if( iter >= maxIter ) std::cout << "\t Fuck \n";
 
     // copy to r
     gsl_vector * x = gsl_multimin_fdfminimizer_x(s);
