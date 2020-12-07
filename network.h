@@ -85,8 +85,8 @@ Network::Network(const Graph& g)
     
     Nv = g.Nvertices();
 
-    T = gsl_multimin_fdfminimizer_conjugate_fr;
-    //T = gsl_multimin_fdfminimizer_conjugate_pr;
+    //T = gsl_multimin_fdfminimizer_conjugate_fr;
+    T = gsl_multimin_fdfminimizer_conjugate_pr;
     //T = gsl_multimin_fdfminimizer_vector_bfgs;
     //T = gsl_multimin_fdfminimizer_vector_bfgs2;
     //T = gsl_multimin_fdfminimizer_steepest_descent;
@@ -143,7 +143,7 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.01, 0.05);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-5, 0.1);
 
     int iter = 0;
     int status;

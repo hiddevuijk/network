@@ -10,7 +10,7 @@ e = data[:N,1]
 
 
 emax = max(e)
-plt.ylim([ 1e-24, emax*1.1])
+plt.ylim([ 1e-27, emax*1.1])
 plt.yscale('log')
 
 plt.plot(g,e)

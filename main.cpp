@@ -37,41 +37,41 @@ int main()
         cout << gamma <<'\t' << network.totalEnergy() << endl;;
     }
 
-    while( gamma > 4.3 ) {
-        gamma -= dg;
-        network.shear(-dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma > 4.3 ) {
+    //    gamma -= dg;
+    //    network.shear(-dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
-    while( gamma < 4.5 ) {
-        gamma += dg;
-        network.shear(dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma < 4.5 ) {
+    //    gamma += dg;
+    //    network.shear(dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
-    while( gamma > 4.3 ) {
-        gamma -= dg;
-        network.shear(-dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma > 4.3 ) {
+    //    gamma -= dg;
+    //    network.shear(-dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
-    while( gamma < 4.5 ) {
-        gamma += dg;
-        network.shear(dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma < 4.5 ) {
+    //    gamma += dg;
+    //    network.shear(dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
-    while( gamma > 4.3 ) {
-        gamma -= dg;
-        network.shear(-dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma > 4.3 ) {
+    //    gamma -= dg;
+    //    network.shear(-dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
-    while( gamma < 4.5 ) {
-        gamma += dg;
-        network.shear(dg);
-        cout << gamma <<'\t' << network.totalEnergy() << endl;;
-    }
+    //while( gamma < 4.5 ) {
+    //    gamma += dg;
+    //    network.shear(dg);
+    //    cout << gamma <<'\t' << network.totalEnergy() << endl;;
+    //}
 
     ofstream top("topology.txt");
     graph.write(top);
