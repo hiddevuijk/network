@@ -13,7 +13,7 @@ using namespace std;
 int main()
 {
     
-    int Nx = 16;
+    int Nx = 20;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
@@ -27,16 +27,16 @@ int main()
     network.set_Ly(Ly);
 
     double gamma = 0;
-    double gmax = 4.0;
-    double dg = gmax/500;
-
-    network.shearAffine(gmax/4.);
-    gamma += gmax/4.;
+    double gmax = 5.;
+    double dg = 1e-3;
     while( gamma < gmax ) {
         gamma += dg;
-        network.shearAffine(dg);
+        //network.shearAffine(dg);
+        network.shear(dg);
         cout << gamma <<'\t' << network.totalEnergy() << endl;;
     }
+
+
 
 
     ofstream top("topology.txt");

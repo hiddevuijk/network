@@ -126,7 +126,6 @@ Network::Network(const Graph& g)
 void Network::shearAffine( double delta_gamma )
 {
     gamma += delta_gamma;
-    delta_gamma /= Ly;
     double x,y;
     //affine deformation
     for( int vi=0; vi<Nv; ++vi ) {
@@ -135,7 +134,6 @@ void Network::shearAffine( double delta_gamma )
         gsl_vector_set( r, 2*vi, x+delta_gamma*y);
     }
 
-    minimize();
     minimize();
 }
 
@@ -149,7 +147,7 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .1);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .05);
 
     int iter = 0;
     int status;
@@ -200,8 +198,8 @@ double Network::totalEnergy() const
 
 double Network::Edge::energy(const gsl_vector *r,const Network *net) const
 {
-
-    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
+    double g = net->gamma*net->Ly;
+    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
 
 
@@ -212,7 +210,8 @@ double Network::Edge::energy(const gsl_vector *r,const Network *net) const
 
 void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network *net) const
 {
-    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
+    double g = net->gamma*net->Ly;
+    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
 
@@ -237,7 +236,8 @@ void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network 
 double Network::Edge::energy_dEnergy(const gsl_vector *r, gsl_vector *df, const Network *net) const
 {
 
-    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
+    double g = net->gamma*net->Ly;
+    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
 
