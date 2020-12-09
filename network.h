@@ -29,6 +29,7 @@ class Network
   public:
     Network(const Graph&);
 
+    void minimize();
     void shear(double delta_gamma); 
     void shearAffine(double delta_gamma); 
     int get_Nv() const {return Nv; }
@@ -65,7 +66,6 @@ class Network
     class Bend{
     };
 
-    void minimize();
 
     const gsl_multimin_fdfminimizer_type *T;
     gsl_multimin_fdfminimizer *s;
@@ -126,14 +126,16 @@ Network::Network(const Graph& g)
 void Network::shearAffine( double delta_gamma )
 {
     gamma += delta_gamma;
+    delta_gamma /= Ly;
     double x,y;
     //affine deformation
     for( int vi=0; vi<Nv; ++vi ) {
         x = gsl_vector_get(r,2*vi);
         y = gsl_vector_get(r,2*vi+1);
-        gsl_vector_set( r, 2*vi, x+delta_gamma*y );
+        gsl_vector_set( r, 2*vi, x+delta_gamma*y);
     }
 
+    minimize();
     minimize();
 }
 
@@ -147,7 +149,7 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-5, 0.1);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .1);
 
     int iter = 0;
     int status;
@@ -155,7 +157,7 @@ void Network::minimize()
         iter++;    
         status = gsl_multimin_fdfminimizer_iterate(s);
         if( status ) break;
-        status = gsl_multimin_test_gradient( s->gradient, 1e-18);
+        status = gsl_multimin_test_gradient( s->gradient, 1e-16);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
     if( iter >= maxIter ) std::cout << "\t Fuck \n";
@@ -213,6 +215,7 @@ void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network 
     double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*net->gamma;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
+
 
     dx *= (net->k)*(1-l0/l);
     dy *= (net->k)*(1-l0/l);

@@ -13,7 +13,7 @@ using namespace std;
 int main()
 {
     
-    int Nx = 10;
+    int Nx = 16;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
@@ -27,12 +27,14 @@ int main()
     network.set_Ly(Ly);
 
     double gamma = 0;
-    double gmax = 2.5;
+    double gmax = 4.0;
     double dg = gmax/500;
 
+    network.shearAffine(gmax/4.);
+    gamma += gmax/4.;
     while( gamma < gmax ) {
         gamma += dg;
-        network.shear(dg);
+        network.shearAffine(dg);
         cout << gamma <<'\t' << network.totalEnergy() << endl;;
     }
 
