@@ -46,6 +46,9 @@ class Network
     double get_edgeEdE( int ei, const gsl_vector *r, gsl_vector *df) const
         { return edges[ei].energy_dEnergy(r, df, this); }
 
+	double get_bendEnergy( int bi, const gsl_vector *r) const
+		{ return bends[bi].energy(r, this); }
+
     std::vector<double> get_positions() const;
     void savePositions(std::ostream& out) const;
 
@@ -64,6 +67,15 @@ class Network
         double energy_dEnergy(const gsl_vector *r, gsl_vector *df, const Network *net) const;
     };
     class Bend{
+	  public:
+		int i,j,k;
+		int xib, yib;
+		int xjb, yjb;
+		double phi0;
+
+		double energy( const gsl_vector *r, const Network *net) const;
+		void dEnergy ( const gsl_vector *r, gsl_vector *df, const Network *net) const;
+		double energy_dEnergy( const gsl_vector *r, gsl_vector *df, const Network *net) const;
     };
 
 
@@ -147,7 +159,7 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .05);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .01);
 
     int iter = 0;
     int status;
@@ -155,7 +167,7 @@ void Network::minimize()
         iter++;    
         status = gsl_multimin_fdfminimizer_iterate(s);
         if( status ) break;
-        status = gsl_multimin_test_gradient( s->gradient, 1e-16);
+        status = gsl_multimin_test_gradient( s->gradient, 1e-12);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
     if( iter >= maxIter ) std::cout << "\t Fuck \n";
@@ -214,8 +226,7 @@ void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network 
     double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
-
-
+	
     dx *= (net->k)*(1-l0/l);
     dy *= (net->k)*(1-l0/l);
 
