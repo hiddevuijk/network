@@ -20,22 +20,22 @@ double min( double a, double b) {
 int main()
 {
     
-    int Nx = 10;
+    int Nx = 8;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
     double z = 3.4;
+	double kappa = 0.;
 
     Graph graph = generateGraph(Nx,Ny,Lx,z);
     
-    Network network(graph);
-    network.set_k(1.);
+    Network network(graph, kappa);
     network.set_Lx(Lx);
     network.set_Ly(Ly);
 
     double gamma = 0;
-    double gmax = 4.;
-    double dg = 1e-3;
+    double gmax = 5.;
+    double dg = 0.01;
 
 	double e, e1, e2, e3;
     while( gamma < gmax ) {
@@ -63,10 +63,8 @@ int main()
 
         //network.shear(dg);
         cout << gamma <<'\t' << e << endl;;
-		if( gamma > 0.3 ) dg *= 1.1;
-		if( gamma > 0.4 ) dg *= 1.25;
-		//if( gamma > 0.175 and gamma < 0.185 ) dg = 1e-5;
-		//if( gamma > 0.185 and gamma < 0.19 ) dg = 1.e-3;
+		//if( gamma > 0.3  ) dg *= 1.05;
+		//if( gamma > 0.35  ) dg *= 1.1;
 	
     }
 
