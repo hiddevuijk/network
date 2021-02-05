@@ -20,7 +20,7 @@ double min( double a, double b) {
 int main()
 {
     
-    int Nx = 20;
+    int Nx = 6;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
@@ -30,6 +30,16 @@ int main()
     Graph graph = generateGraph(Nx,Ny,Lx,z);
     
     Network network(graph,Lx,Ly, kappa);
+	double y = gsl_vector_get(network.r, 2*8+1);
+	gsl_vector_set(network.r, 2*8+1, y+0.3);
+	network.set_phi0();
+
+	for(unsigned int bi=0;bi < network.bends.size(); ++bi) {
+		cout << network.bends[bi].i << '\t';
+		cout << network.bends[bi].j << '\t';
+		cout << network.bends[bi].k << endl;
+		cout << network.bends[bi].phi0 << endl << endl;
+	}
 
     ofstream top("topology.txt");
     graph.write(top);
@@ -41,6 +51,7 @@ int main()
     out0.close();
 
 
+	return 0;
 
     double gamma = 0;
     double gmax = 1.;

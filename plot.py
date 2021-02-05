@@ -12,7 +12,7 @@ Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
 Nb = int( lines[2].strip() )
 
-rList = open('r.dat').readlines()
+rList = open('r0.dat').readlines()
 xList = np.zeros(Nv)
 yList = np.zeros(Nv)
 
@@ -61,8 +61,8 @@ for ei in range(Ne):
 #plt.scatter(xList, yList,color='black', s=30, zorder=10)
 
 d = 0.075
-#for i in range(Nv):
-#    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
+for i in range(Nv):
+    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
 
 plt.gca().set_aspect('equal')
 plt.show()

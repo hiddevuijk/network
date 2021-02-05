@@ -92,6 +92,9 @@ class Network
 		double get_lji( const gsl_vector *r, const Network *net) const;
 		double get_ljk( const gsl_vector *r, const Network *net) const;
 		double get_phi( const gsl_vector *r, const Network *net) const;
+		double get_phi2( const gsl_vector *r, const Network *net) const;
+
+		void set_phi0( const gsl_vector *r, const Network *net);
 
 		double energy( const gsl_vector *r, const Network *net) const;
 		void dEnergy ( const gsl_vector *r, gsl_vector *df, const Network *net) const;
@@ -99,14 +102,15 @@ class Network
     };
 
 
+  public: // remove
 	void set_kappa();
+	void set_phi0();
 
     const gsl_multimin_fdfminimizer_type *T;
     gsl_multimin_fdfminimizer *s;
 
     gsl_vector *r;
     gsl_multimin_function_fdf functions;
-
     std::vector<Edge> edges;
     std::vector<Bend> bends;
   public:
@@ -179,16 +183,27 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
 
 	kappa = kappaa;
 	set_kappa();
+
+	set_phi0();
+	
 }
 
 void Network::set_kappa()
 {
-	//double lji, ljk;
-	//for( int bi=0; bi< Nb; ++bi ) {
-	//	lji = bends[bi].get_lji(r,this);
-	//	ljk = bends[bi].get_ljk(r,this);
-	//	bends[bi].kappa = kappa*( bends[bi].get_lji(r, this) + bends[bi].get_ljk(r, this) ) / 2;
-	//}
+	double lji, ljk;
+	for( int bi=0; bi< Nb; ++bi ) {
+		lji = bends[bi].get_lji(r,this);
+		ljk = bends[bi].get_ljk(r,this);
+		//bends[bi].kappa = kappa*( bends[bi].get_lji(r, this) + bends[bi].get_ljk(r, this) ) / 2;
+		bends[bi].kappa = kappa*( lji + ljk ) / 2;
+	}
+}
+
+void Network::set_phi0()
+{
+	for(unsigned int bi = 0; bi < bends.size(); ++bi) {
+		bends[bi].set_phi0(r,this);
+	}
 }
 
 
@@ -387,6 +402,12 @@ double Network::Bend::get_ljk( const gsl_vector *r, const Network *net) const
 	return std::sqrt( dxjk*dxjk + dyjk*dyjk );
 }
 
+void Network::Bend::set_phi0( const gsl_vector *r, const Network *net)
+{
+	phi0 = get_phi(r,net);
+}
+
+
 double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
 {
 
@@ -412,13 +433,15 @@ double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
 	dxjk /= norm;
 	dyjk /= norm;
 
-	return std::acos( dxji*dxjk + dyji*dyjk );
-
+	double aa = dxji*dyjk - dyji*dxjk;
+	double bb = dxji*dxjk + dyji*dyjk;
+	return std::atan2(aa,bb);
 }
+
 
 double Network::Bend::energy( const gsl_vector *r, const Network *net) const
 {
-	double delta_phi =  get_phi(r,net) - phi0;
+	//double delta_phi =  get_phi(r,net) - phi0;
 	return 0;
 	//return kappa*delta_phi*delta_phi/2;	
 }
