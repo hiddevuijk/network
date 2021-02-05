@@ -183,12 +183,12 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
 
 void Network::set_kappa()
 {
-	double lji, ljk;
-	for( int bi=0; bi< Nb; ++bi ) {
-		lji = bends[bi].get_lji(r,this);
-		ljk = bends[bi].get_ljk(r,this);
-		bends[bi].kappa = kappa*( bends[bi].get_lji(r, this) + bends[bi].get_ljk(r, this) ) / 2;
-	}
+	//double lji, ljk;
+	//for( int bi=0; bi< Nb; ++bi ) {
+	//	lji = bends[bi].get_lji(r,this);
+	//	ljk = bends[bi].get_ljk(r,this);
+	//	bends[bi].kappa = kappa*( bends[bi].get_lji(r, this) + bends[bi].get_ljk(r, this) ) / 2;
+	//}
 }
 
 
@@ -262,9 +262,9 @@ double Network::totalEnergy() const
     for(int ei=0; ei<Ne; ++ei) {
         e += get_edgeEnergy(ei,r);
     }
-	for(int bi=0; bi<Nb; ++bi) {
-		e += get_bendEnergy(bi,r);
-	}
+	//for(int bi=0; bi<Nb; ++bi) {
+	//	e += get_bendEnergy(bi,r);
+	//}
     return e;
 }
 
@@ -419,8 +419,8 @@ double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
 double Network::Bend::energy( const gsl_vector *r, const Network *net) const
 {
 	double delta_phi =  get_phi(r,net) - phi0;
-
-	return kappa*delta_phi*delta_phi/2;	
+	return 0;
+	//return kappa*delta_phi*delta_phi/2;	
 }
 
 void Network::Bend::dEnergy ( const gsl_vector *r, gsl_vector *df, const Network *net) const
@@ -512,9 +512,9 @@ double energy( const gsl_vector *v, void *params)
     }
 
 	// energy from bending
-	for(int bi=0; bi < net->get_Nbends(); ++bi) {
-		e += net->get_bendEnergy(bi, v);
-	}
+	//for(int bi=0; bi < net->get_Nbends(); ++bi) {
+	//	e += net->get_bendEnergy(bi, v);
+	//}
 	
 
     return e;
@@ -529,9 +529,9 @@ void dEnergy( const gsl_vector *v, void *params, gsl_vector *df)
         net->get_edgeDEnergy(ei, v, df);
     } 
 
-	for( int bi=0; bi < net->get_Nbends(); ++bi) {
-		net->get_bendDEnergy(bi, v, df);
-	}
+	//for( int bi=0; bi < net->get_Nbends(); ++bi) {
+	//	net->get_bendDEnergy(bi, v, df);
+	//}
 }
 
 void EdE( const gsl_vector *v, void *params, double *f, gsl_vector *df)

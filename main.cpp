@@ -20,7 +20,7 @@ double min( double a, double b) {
 int main()
 {
     
-    int Nx = 10;
+    int Nx = 20;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
@@ -31,9 +31,20 @@ int main()
     
     Network network(graph,Lx,Ly, kappa);
 
+    ofstream top("topology.txt");
+    graph.write(top);
+    top.close();
+
+
+    ofstream out0("r0.dat");
+    network.savePositions(out0);
+    out0.close();
+
+
+
     double gamma = 0;
-    double gmax = 5.;
-    double dg = 0.02;
+    double gmax = 1.;
+    double dg = 0.001;
 
 	double e, e1, e2, e3;
     while( gamma < gmax ) {
@@ -43,15 +54,15 @@ int main()
 		e1 = network.totalEnergy();
 		
 		e = e1;
-		//network.shear(0.1*dg);
-		//network.shear(-0.1*dg);
-		//e2 = network.totalEnergy();
-		//
-		//network.shear(-0.01*dg);
-		//network.shear(0.01*dg);
-		//e3 = network.totalEnergy();
+		network.shear(0.1*dg);
+		network.shear(-0.1*dg);
+		e2 = network.totalEnergy();
+		
+		network.shear(-0.01*dg);
+		network.shear(0.01*dg);
+		e3 = network.totalEnergy();
 
-		//e = min( e1, min(e2,e3) );
+		e = min( e1, min(e2,e3) );
 
 		//for(int i=0; i<5; ++i) {
 		//	network.shear(-0.05*dg);
@@ -61,17 +72,11 @@ int main()
 
 
         //network.shear(dg);
-        //cout << gamma <<'\t' << e << endl;;
-		if( gamma > 0.3  ) dg *= 1.05;
+        cout << gamma <<'\t' << e << endl;;
+		//if( gamma > 0.3  ) dg *= 1.05;
+		dg *= 1.01;
 	
     }
-
-
-
-    ofstream top("topology.txt");
-    graph.write(top);
-    top.close();
-
     ofstream out("r.dat");
     network.savePositions(out);
     out.close();

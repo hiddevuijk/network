@@ -6,7 +6,7 @@ topology = open('topology.txt')
 lines = topology.readlines()
 topology.close()
 
-Lx = 40
+Lx = 10
 Ly = Lx*np.sqrt(3/4.)
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
@@ -53,15 +53,16 @@ for ei in range(Ne):
 
     if( xb == 0 and yb == 0): 
         plt.plot( [ xfrom, xto], [yfrom, yto], linewidth=3, color='grey' )
-    else: 
-        plt.plot( [ xfrom, xto + xb*Lx], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
-        plt.plot( [ xto, xfrom-xb*Lx ], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
+    #else: 
+    #    plt.plot( [ xfrom, xto + xb*Lx], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
+    #    plt.plot( [ xto, xfrom-xb*Lx ], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
 
 
-plt.scatter(xList, yList,color='black', s=30, zorder=10)
+#plt.scatter(xList, yList,color='black', s=30, zorder=10)
 
 d = 0.075
 #for i in range(Nv):
 #    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
 
+plt.gca().set_aspect('equal')
 plt.show()
