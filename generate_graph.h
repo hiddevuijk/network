@@ -78,9 +78,8 @@ void shuffle( V& v, boost::random::mt19937 & rng)
 
 
 
-Graph generateGraph(int Nx, int Ny, double Lx, double z)
+Graph generateGraph(int Nx, int Ny, double Lx, double z, long int seed = 123456789)
 {
-    long int seed = 122456789;
     boost::random::mt19937 rng(seed);
     boost::random::uniform_int_distribution<int> randX(0,Nx-1);
     boost::random::uniform_int_distribution<int> randY(0,Ny-1);

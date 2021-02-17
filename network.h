@@ -33,6 +33,8 @@ class Network
   public:
     Network(const Graph&, double Lx, double Ly, double kappa);
 
+	void shake( boost::mt19937 &rng, double sigma);
+
     void minimize();
     void shear(double delta_gamma); 
     void shearAffine(double delta_gamma); 
@@ -40,7 +42,10 @@ class Network
     int get_Nedges() const { return Ne; }
     int get_Nbends() const { return Nb; }
 
+    double edgeEnergy() const; 
+    double bendEnergy() const; 
     double totalEnergy() const; 
+
     double get_edgeEnergy( int ei, const gsl_vector *r) const
         { return edges[ei].energy(r, this); }
 
@@ -74,6 +79,8 @@ class Network
         double l0; 
 
 		double get_l( const gsl_vector *r, const Network *net) const;
+		void set_l0( const gsl_vector *r, const Network *net) { l0 = get_l(r,net); }
+		void set_l0( double l00) { l0 = l00; }
 
         double energy(const gsl_vector *r, const Network *net) const;
         void dEnergy( const gsl_vector *r,  gsl_vector *df, const Network *net) const;
@@ -92,9 +99,9 @@ class Network
 		double get_lji( const gsl_vector *r, const Network *net) const;
 		double get_ljk( const gsl_vector *r, const Network *net) const;
 		double get_phi( const gsl_vector *r, const Network *net) const;
-		double get_phi2( const gsl_vector *r, const Network *net) const;
 
 		void set_phi0( const gsl_vector *r, const Network *net);
+	
 
 		double energy( const gsl_vector *r, const Network *net) const;
 		void dEnergy ( const gsl_vector *r, gsl_vector *df, const Network *net) const;
@@ -105,7 +112,11 @@ class Network
   public: // remove
 	void set_kappa();
 	void set_phi0();
+	void set_l0();
+	void set_l0(double l00);
 
+	double get_phi(int bi) const { return bends[bi].get_phi(r,this); };
+	
     const gsl_multimin_fdfminimizer_type *T;
     gsl_multimin_fdfminimizer *s;
 
@@ -185,8 +196,24 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
 	set_kappa();
 
 	set_phi0();
+	set_l0();
 	
 }
+
+
+void Network::shake( boost::mt19937 &rng, double sigma)
+{
+	boost::normal_distribution<> nd(0.0, sigma);
+	boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > random_normal(rng, nd);
+
+	double xy;
+	for( int vi=0; vi<2*Nv; ++vi){
+		xy = gsl_vector_get(r, vi);
+		gsl_vector_set(r, vi, xy + random_normal() );
+	}
+	
+}
+
 
 void Network::set_kappa()
 {
@@ -206,6 +233,19 @@ void Network::set_phi0()
 	}
 }
 
+void Network::set_l0()
+{
+	for(unsigned int ei=0; ei<edges.size(); ++ei) {
+		edges[ei].set_l0(r,this);
+	}
+}
+
+void Network::set_l0(double l00)
+{
+	for(unsigned int ei=0; ei<edges.size(); ++ei) {
+		edges[ei].set_l0(l00);
+	}
+}
 
 void Network::shearAffine( double delta_gamma )
 {
@@ -218,7 +258,7 @@ void Network::shearAffine( double delta_gamma )
         gsl_vector_set( r, 2*vi, x+delta_gamma*y);
     }
 
-    minimize();
+	minimize();
 }
 
 
@@ -231,15 +271,15 @@ void Network::shear( double delta_gamma )
 void Network::minimize()
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 1e-1, .01);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.1, 1.);
 
     int iter = 0;
     int status;
     do{
         iter++;    
-        status = gsl_multimin_fdfminimizer_iterate(s);
+		status = gsl_multimin_fdfminimizer_iterate(s);
         if( status ) break;
-        status = gsl_multimin_test_gradient( s->gradient, 1e-12);
+        status = gsl_multimin_test_gradient( s->gradient, 1e-6);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
     if( iter >= maxIter ) std::cout << "\t Fuck \n";
@@ -271,16 +311,35 @@ void Network::savePositions(std::ostream& out) const
     }
 }
 
+
+double Network::edgeEnergy() const
+{
+	double e = 0;
+    for(int ei=0; ei<Ne; ++ei) {
+        e += get_edgeEnergy(ei,r);
+    }
+	return e/(Lx*Ly);
+}
+
+double Network::bendEnergy() const
+{
+    double e = 0;
+	for(int bi=0; bi<Nb; ++bi) {
+		e += get_bendEnergy(bi,r);
+	}
+    return e/(Lx*Ly);
+}
+
 double Network::totalEnergy() const
 {
     double e = 0;
     for(int ei=0; ei<Ne; ++ei) {
         e += get_edgeEnergy(ei,r);
     }
-	//for(int bi=0; bi<Nb; ++bi) {
-	//	e += get_bendEnergy(bi,r);
-	//}
-    return e;
+	for(int bi=0; bi<Nb; ++bi) {
+		e += get_bendEnergy(bi,r);
+	}
+    return e/(Lx*Ly);
 }
 
 void Network::set_Lx(double Lxx)
@@ -403,9 +462,7 @@ double Network::Bend::get_ljk( const gsl_vector *r, const Network *net) const
 }
 
 void Network::Bend::set_phi0( const gsl_vector *r, const Network *net)
-{
-	phi0 = get_phi(r,net);
-}
+{ phi0 = get_phi(r,net); }
 
 
 double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
@@ -425,90 +482,90 @@ double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
 	double dxjk = xk - xj + (net->Lx)*xkb + (net->gamma)*ykb;
 	double dyjk = yk - yj + (net->Ly)*ykb;
 
-	double norm = std::sqrt( dxji*dxji + dyji*dyji ); 
-	dxji /= norm;
-	dyji /= norm;
+	//double norm = std::sqrt( dxji*dxji + dyji*dyji ); 
+	//dxji /= norm;
+	//dyji /= norm;
 
-	norm = std::sqrt( dxjk*dxjk + dyjk*dyjk );
-	dxjk /= norm;
-	dyjk /= norm;
+	//norm = std::sqrt( dxjk*dxjk + dyjk*dyjk );
+	//dxjk /= norm;
+	//dyjk /= norm;
 
-	double aa = dxji*dyjk - dyji*dxjk;
-	double bb = dxji*dxjk + dyji*dyjk;
-	return std::atan2(aa,bb);
+	double a = dyji*dxjk - dxji*dyjk;
+	double b = dxji*dxjk + dyji*dyjk;
+	double phi = std::atan2(a,b);
+	if( phi < 0) phi += 2*std::acos(-1);
+	return phi;
 }
 
 
 double Network::Bend::energy( const gsl_vector *r, const Network *net) const
 {
-	//double delta_phi =  get_phi(r,net) - phi0;
-	return 0;
-	//return kappa*delta_phi*delta_phi/2;	
+	if( ykb != 0 or yib != 0 or xkb != 0 or xib!=0) return 0;
+	double phi = get_phi(r,net);
+	double delta_phi = phi - phi0;
+	return kappa*delta_phi*delta_phi/2;	
 }
 
 void Network::Bend::dEnergy ( const gsl_vector *r, gsl_vector *df, const Network *net) const
 {
 
-	double epsilon = 1e-6;
-
-	double dxji = gsl_vector_get(r, 2*i) - gsl_vector_get(r,  2*j) + (net->Lx)*xib + (net->gamma)*yib;
-	double dyji = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,  2*j+1) + (net->Ly)*yib;
-	double dxjk = gsl_vector_get(r, 2*k) - gsl_vector_get(r,  2*j) + (net->Lx)*xkb + (net->gamma)*ykb;
-	double dyjk = gsl_vector_get(r, 2*k+1) - gsl_vector_get(r,  2*j+1) + (net->Ly)*ykb;
-
-	double dji = std::sqrt( dxji*dxji + dyji*dyji);
-	double djk = std::sqrt( dxjk*dxjk + dyjk*dyjk);
-
-	// dd = d^_ji*d^_jk
-	double dd =  (dxji*dxjk + dyji*dyjk)/(dji*djk);
-
-	double phi = std::acos(dd);
 	
+	if( ykb != 0 or yib != 0 or xkb != 0 or xib!=0) return;
+	double xi = gsl_vector_get(r, 2*i);
+	double yi = gsl_vector_get(r, 2*i+1);
 	
-	double dphi = std::sqrt( 1 -dd*dd);
-	if( std::fabs(dphi) < epsilon ) return;
-	dphi = -1./dphi;
+	double xj = gsl_vector_get(r, 2*j);
+	double yj = gsl_vector_get(r, 2*j+1);
 
-	// derivarives of dd
-	// d(dd)/dxi
-	double ddxi = dxjk/(dji*djk) - dd*dxji/(dji*dji);
-	// d(dd)/dyi
-	double ddyi = dyjk/(dji*djk) - dd*dyji/(dji*dji);
-	// d(dd)dxk
-	double ddxk = dxji/(dji*djk) - dd*dxjk/(djk*djk);
-	// d(dd)/dyi
-	double ddyk = dyji/(dji*djk) - dd*dyjk/(djk*djk);
-	// d(dd)/dxj
-	double ddxj = -(dxji+dxjk)/(dji*djk) + dd*dxji/(dji*dji);
-	// d(dd)/dyj
-	double ddyj = -(dyji+dyjk)/(dji*djk) + dd*dyji/(dji*dji);
+	double xk = gsl_vector_get(r, 2*k);
+	double yk = gsl_vector_get(r, 2*k+1);
 
+	double dxji = xi - xj + (net->Lx)*xib + (net->gamma)*yib;	
+	double dyji = yi - yj + (net->Ly)*yib;
+	double dxjk = xk - xj + (net->Lx)*xkb + (net->gamma)*ykb;
+	double dyjk = yk - yj + (net->Ly)*ykb;
 
-	// change to add constant
+	//double norm = std::sqrt( dxji*dxji + dyji*dyji ); 
+	//dxji /= norm;
+	//dyji /= norm;
+
+	//norm = std::sqrt( dxjk*dxjk + dyjk*dyjk );
+	//dxjk /= norm;
+	//dyjk /= norm;
+
+	double a = dyji*dxjk - dxji*dyjk;
+	double b = dxji*dxjk + dyji*dyjk;
+	double phi =  std::atan2(a,b);
+	if( phi < 0 ) phi += 2*std::acos(-1);
+
+	double Falpha =  kappa*(phi-phi0);
+	double A =    b/(a*a+b*b);
+	double B = -1*a/(a*a+b*b);
+
 	double F;
 	// set F_xi
 	F = gsl_vector_get(df, 2*i);
-	gsl_vector_set(df, 2*i, F-kappa*(phi-phi0)*dphi*ddxi);
+	gsl_vector_set(df, 2*i, F+Falpha*(-A*dyjk + B*dxjk) );
 
 	// set F_yi
 	F = gsl_vector_get(df, 2*i+1);
-	gsl_vector_set(df, 2*i+1, F-kappa*(phi-phi0)*dphi*ddyi);
+	gsl_vector_set(df, 2*i+1, F+Falpha*(A*dxjk + B*dyjk) );
 
 	// set F_xj
 	F = gsl_vector_get(df, 2*j);
-	gsl_vector_set(df, 2*j, F-kappa*(phi-phi0)*dphi*ddxj);
+	gsl_vector_set(df, 2*j, F+Falpha*(A*(dyjk-dyji) - B*(dxjk + dxji) ) );
 
 	// set F_yj
 	F = gsl_vector_get(df, 2*j+1);
-	gsl_vector_set(df, 2*j+1, F-kappa*(phi-phi0)*dphi*ddyj);
+	gsl_vector_set(df, 2*j+1, F+Falpha*(A*(dxji-dxjk)-B*(dyjk+dyji) ) );
 
 	// set F_xk
 	F = gsl_vector_get(df, 2*k);
-	gsl_vector_set(df, 2*k, F-kappa*(phi-phi0)*dphi*ddxk);
+	gsl_vector_set(df, 2*k, F+Falpha*(A*dyji +B*dxji ) );
 
 	// set F_yk
 	F = gsl_vector_get(df, 2*k+1);
-	gsl_vector_set(df, 2*k+1, F-kappa*(phi-phi0)*dphi*ddyk);
+	gsl_vector_set(df, 2*k+1, F+Falpha*(-A*dxji+B*dyji) );
 
 
 }
@@ -535,11 +592,10 @@ double energy( const gsl_vector *v, void *params)
     }
 
 	// energy from bending
-	//for(int bi=0; bi < net->get_Nbends(); ++bi) {
-	//	e += net->get_bendEnergy(bi, v);
-	//}
+	for(int bi=0; bi < net->get_Nbends(); ++bi) {
+		e += net->get_bendEnergy(bi, v);
+	}
 	
-
     return e;
 }
 
@@ -552,28 +608,21 @@ void dEnergy( const gsl_vector *v, void *params, gsl_vector *df)
         net->get_edgeDEnergy(ei, v, df);
     } 
 
-	//for( int bi=0; bi < net->get_Nbends(); ++bi) {
-	//	net->get_bendDEnergy(bi, v, df);
-	//}
+
+	for( int bi=0; bi < net->get_Nbends(); ++bi) {
+		net->get_bendDEnergy(bi, v, df);
+	}
 }
+
 
 void EdE( const gsl_vector *v, void *params, double *f, gsl_vector *df)
 {
     *f = energy(v,params);
     dEnergy( v, params, df);
-
-    //Network *net = (Network *) params;
-
-    //double e = 0;
-    //gsl_vector_scale( df, 0); // set all elements to 0
-    //for(int ei=0; ei < net->get_Nedges(); ++ei) {
-    //    e += net->get_edgeEdE(ei, v, df);
-    //}
-	//for( int bi=0; bi < net->get_Nbends(); ++bi) {
-	//	e += net->get_bendEdE(bi, v, df);
-	//}
-
-    //*f = e;
 }
+
+
+
+
 
 #endif

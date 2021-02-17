@@ -3,6 +3,8 @@
 #include "generate_graph.h"
 #include "network.h"
 
+#include "boost/random.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -19,27 +21,29 @@ double min( double a, double b) {
 
 int main()
 {
-    
-    int Nx = 6;
+
+    int Nx = 50;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
-    double z = 3.4;
-	double kappa = 1.;
+    double z = 3.2;
+	double kappa = 1.e-2;
+	long int seed  = 333356789;
+	double sigma = 0;
+	int n = 0;
+	
+    double gamma = 0;
+    double gmax = 1.2e1;
+	double dg0 = 0.00;
+    double dg = 0.00025;
+	double alpha = 1.05;
 
-    Graph graph = generateGraph(Nx,Ny,Lx,z);
-    
-    Network network(graph,Lx,Ly, kappa);
-	double y = gsl_vector_get(network.r, 2*8+1);
-	gsl_vector_set(network.r, 2*8+1, y+0.3);
-	network.set_phi0();
+	bool backwards = false;
 
-	for(unsigned int bi=0;bi < network.bends.size(); ++bi) {
-		cout << network.bends[bi].i << '\t';
-		cout << network.bends[bi].j << '\t';
-		cout << network.bends[bi].k << endl;
-		cout << network.bends[bi].phi0 << endl << endl;
-	}
+	boost::mt19937 rng(2*seed);
+
+    Graph graph = generateGraph(Nx,Ny,Lx,z, seed);
+	Network network(graph,Lx,Ly, kappa);
 
     ofstream top("topology.txt");
     graph.write(top);
@@ -50,47 +54,50 @@ int main()
     network.savePositions(out0);
     out0.close();
 
-
-	return 0;
-
-    double gamma = 0;
-    double gmax = 1.;
-    double dg = 0.001;
-
-	double e, e1, e2, e3;
+	network.shearAffine(dg0);
+	gamma += dg0;
+	double e, e1;
     while( gamma < gmax ) {
         gamma += dg;
 
-		network.shear(dg);
-		e1 = network.totalEnergy();
-		
-		e = e1;
-		network.shear(0.1*dg);
-		network.shear(-0.1*dg);
-		e2 = network.totalEnergy();
-		
-		network.shear(-0.01*dg);
-		network.shear(0.01*dg);
-		e3 = network.totalEnergy();
+		network.shearAffine(dg);
+		//network.shear(dg);
+		e = network.totalEnergy();
 
-		e = min( e1, min(e2,e3) );
+		for(int i=0;i<n; ++i) {
+			//network.shake(rng, sigma);
+			network.minimize();
+			e1 = network.totalEnergy();
+			e = min(e,e1);
+		}
 
-		//for(int i=0; i<5; ++i) {
-		//	network.shear(-0.05*dg);
-		//	network.shear(0.05*dg);
-		//	e = min( e, network.totalEnergy() );
-		//}
-
-
-        //network.shear(dg);
-        cout << gamma <<'\t' << e << endl;;
-		//if( gamma > 0.3  ) dg *= 1.05;
-		dg *= 1.01;
-	
+		cout << gamma <<'\t' << e << endl;;
+		dg *= alpha;
     }
+
+	if(backwards) cout << gamma <<'\t' << e << endl;;
+    while( gamma > dg/alpha and backwards ) {
+		dg /= alpha;
+        gamma -= dg;
+
+		//network.shake(rng, sigma);
+		network.shear(-dg);
+		e = network.totalEnergy();
+
+		for(int i=0;i<n; ++i) {
+			network.shake(rng, sigma);
+			network.minimize();
+			e1 = network.totalEnergy();
+			e = min(e,e1);
+		}
+
+
+		cout << gamma <<'\t' << e << endl;;
+	}
     ofstream out("r.dat");
     network.savePositions(out);
     out.close();
+
 
 
     return 0;
