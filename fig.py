@@ -15,12 +15,12 @@ dedg = np.gradient(e,g)
 ddedg = np.gradient(dedg,g)
 
 plt.scatter(g,ddedg, color='blue', label=r"$K = \frac{ d^2 H}{d\gamma^2}$")
-plt.scatter(g,dedg, color='magenta', label=r"$\sigma= \frac{d H}{d \gamma}$")
-plt.scatter(g,e, color='red', label=r"$H$")
+#plt.scatter(g,dedg, color='magenta', label=r"$\sigma= \frac{d H}{d \gamma}$")
+#plt.scatter(g,e, color='red', label=r"$H$")
 
 emax = max(e)
-emax = max( emax, max(dedg) )
-emax = max( emax, max(ddedg) )
+#emax = max( emax, max(dedg) )
+#emax = max( emax, max(ddedg) )
 
 plt.ylim([ 1e-17, emax*2])
 plt.yscale('log')

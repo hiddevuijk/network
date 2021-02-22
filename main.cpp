@@ -22,23 +22,25 @@ double min( double a, double b) {
 int main()
 {
 
-    int Nx = 50;
+    int Nx = 30;
     int Ny = Nx;
     double Lx = Nx;
     double Ly = Lx*sqrt(3/4.);
     double z = 3.2;
-	double kappa = 1.e-2;
-	long int seed  = 333356789;
-	double sigma = 0;
-	int n = 0;
+	double kappa = 0*1.e-2;
+	long int seed  = 113356789;
 	
     double gamma = 0;
     double gmax = 1.2e1;
-	double dg0 = 0.00;
-    double dg = 0.00025;
+    double dg = 0.0005;
 	double alpha = 1.05;
 
-	bool backwards = false;
+
+	double eLine = 0.1;
+	double dLine = 0.1;
+	double e = 1e-9;
+
+	bool backwards = true;
 
 	boost::mt19937 rng(2*seed);
 
@@ -54,45 +56,28 @@ int main()
     network.savePositions(out0);
     out0.close();
 
-	network.shearAffine(dg0);
-	gamma += dg0;
-	double e, e1;
-    while( gamma < gmax ) {
+	double energy;
+    while( fabs(gamma) < gmax ) {
         gamma += dg;
 
-		network.shearAffine(dg);
-		//network.shear(dg);
-		e = network.totalEnergy();
+		network.shearAffine(1.25dg,eLine, dLine, e*1000);
+		network.shearAffine(-0.25*dg,eLine, dLine, e);
+		energy = network.totalEnergy();
 
-		for(int i=0;i<n; ++i) {
-			//network.shake(rng, sigma);
-			network.minimize();
-			e1 = network.totalEnergy();
-			e = min(e,e1);
-		}
-
-		cout << gamma <<'\t' << e << endl;;
+		cout << gamma <<'\t' << energy << endl;;
 		dg *= alpha;
     }
 
 	if(backwards) cout << gamma <<'\t' << e << endl;;
-    while( gamma > dg/alpha and backwards ) {
+    while( fabs(gamma) > fabs(dg/alpha) and backwards ) {
 		dg /= alpha;
         gamma -= dg;
 
-		//network.shake(rng, sigma);
-		network.shear(-dg);
-		e = network.totalEnergy();
-
-		for(int i=0;i<n; ++i) {
-			network.shake(rng, sigma);
-			network.minimize();
-			e1 = network.totalEnergy();
-			e = min(e,e1);
-		}
+		network.shear(-dg, eLine, dLine, e);
+		energy = network.totalEnergy();
 
 
-		cout << gamma <<'\t' << e << endl;;
+		cout << gamma <<'\t' << energy << endl;;
 	}
     ofstream out("r.dat");
     network.savePositions(out);

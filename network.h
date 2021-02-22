@@ -35,9 +35,9 @@ class Network
 
 	void shake( boost::mt19937 &rng, double sigma);
 
-    void minimize();
-    void shear(double delta_gamma); 
-    void shearAffine(double delta_gamma); 
+    void minimize(double eLine, double dLine, double e);
+    void shear(double delta_gamma, double eLine, double dLine, double e); 
+    void shearAffine(double delta_gamma, double eLine, double dLine, double e); 
     int get_Nv() const {return Nv; }
     int get_Nedges() const { return Ne; }
     int get_Nbends() const { return Nb; }
@@ -247,7 +247,8 @@ void Network::set_l0(double l00)
 	}
 }
 
-void Network::shearAffine( double delta_gamma )
+void Network::shearAffine( double delta_gamma,
+					double eLine, double dLine, double e )
 {
     gamma += delta_gamma;
     double x,y;
@@ -258,20 +259,21 @@ void Network::shearAffine( double delta_gamma )
         gsl_vector_set( r, 2*vi, x+delta_gamma*y);
     }
 
-	minimize();
+	minimize(eLine, dLine, e);
 }
 
 
-void Network::shear( double delta_gamma )
+void Network::shear( double delta_gamma,
+					double eLine, double dLine, double e )
 {
     gamma += delta_gamma;
-    minimize();
+	minimize(eLine, dLine, e);
 }
 
-void Network::minimize()
+void Network::minimize( double eLine, double dLine, double e)
 {
     // add params to network
-    gsl_multimin_fdfminimizer_set(s, &functions, r, 0.1, 1.);
+    gsl_multimin_fdfminimizer_set(s, &functions, r, eLine, dLine);
 
     int iter = 0;
     int status;
@@ -279,7 +281,7 @@ void Network::minimize()
         iter++;    
 		status = gsl_multimin_fdfminimizer_iterate(s);
         if( status ) break;
-        status = gsl_multimin_test_gradient( s->gradient, 1e-6);
+        status = gsl_multimin_test_gradient( s->gradient, e);
         
     } while( status == GSL_CONTINUE && iter < maxIter);
     if( iter >= maxIter ) std::cout << "\t Fuck \n";
