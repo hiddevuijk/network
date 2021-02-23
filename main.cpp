@@ -3,6 +3,8 @@
 #include "generate_graph.h"
 #include "network.h"
 
+#include "ConfigFile.h"
+
 #include "boost/random.hpp"
 
 #include <iostream>
@@ -22,64 +24,58 @@ double min( double a, double b) {
 int main()
 {
 
-    int Nx = 30;
+	ConfigFile config("input.txt");
+
+	int Nx = config.read<int>("Nx");
     int Ny = Nx;
-    double Lx = Nx;
+	// assert( Ny % 2 == 0 );
+    double Lx = config.read<double>("Lx");
     double Ly = Lx*sqrt(3/4.);
-    double z = 3.2;
-	double kappa = 0*1.e-2;
-	long int seed  = 113356789;
+    double z = config.read<double>("z");
+	double kappa = config.read<double>("kappa");
+	long int seed  = config.read<long int>("seed");
 	
+    double gmax = config.read<double>("gmax");
+    double dg = config.read<double>("dg");
     double gamma = 0;
-    double gmax = 1.2e1;
-    double dg = 0.0005;
-	double alpha = 1.05;
+	double alpha = config.read<double>("alpha");
 
 
-	double eLine = 0.1;
-	double dLine = 0.1;
-	double e = 1e-9;
+	double eLine = config.read<double>("eLine");
+	double dLine = config.read<double>("dLine");
+	double e = config.read<double>("e");
 
-	bool backwards = true;
-
-	boost::mt19937 rng(2*seed);
+	string topologyName = config.read<string>("topologyName");
+	string r0Name = config.read<string>("r0Name");
+	string rName = config.read<string>("rName");
+	string gammaEName = config.read<string>("gammaEName");
 
     Graph graph = generateGraph(Nx,Ny,Lx,z, seed);
 	Network network(graph,Lx,Ly, kappa);
 
-    ofstream top("topology.txt");
+    ofstream top(topologyName);
     graph.write(top);
     top.close();
 
 
-    ofstream out0("r0.dat");
+    ofstream out0(r0Name);
     network.savePositions(out0);
     out0.close();
+
+	ofstream gEout( gammaEName );
 
 	double energy;
     while( fabs(gamma) < gmax ) {
         gamma += dg;
 
-		network.shearAffine(1.25dg,eLine, dLine, e*1000);
-		network.shearAffine(-0.25*dg,eLine, dLine, e);
+		network.shearAffine(dg,eLine, dLine, e);
 		energy = network.totalEnergy();
 
-		cout << gamma <<'\t' << energy << endl;;
+		gEout << gamma <<'\t' << energy << endl;;
 		dg *= alpha;
     }
 
-	if(backwards) cout << gamma <<'\t' << e << endl;;
-    while( fabs(gamma) > fabs(dg/alpha) and backwards ) {
-		dg /= alpha;
-        gamma -= dg;
-
-		network.shear(-dg, eLine, dLine, e);
-		energy = network.totalEnergy();
-
-
-		cout << gamma <<'\t' << energy << endl;;
-	}
-    ofstream out("r.dat");
+    ofstream out(rName);
     network.savePositions(out);
     out.close();
 

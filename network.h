@@ -484,14 +484,6 @@ double Network::Bend::get_phi( const gsl_vector *r, const Network *net) const
 	double dxjk = xk - xj + (net->Lx)*xkb + (net->gamma)*ykb;
 	double dyjk = yk - yj + (net->Ly)*ykb;
 
-	//double norm = std::sqrt( dxji*dxji + dyji*dyji ); 
-	//dxji /= norm;
-	//dyji /= norm;
-
-	//norm = std::sqrt( dxjk*dxjk + dyjk*dyjk );
-	//dxjk /= norm;
-	//dyjk /= norm;
-
 	double a = dyji*dxjk - dxji*dyjk;
 	double b = dxji*dxjk + dyji*dyjk;
 	double phi = std::atan2(a,b);
@@ -526,14 +518,6 @@ void Network::Bend::dEnergy ( const gsl_vector *r, gsl_vector *df, const Network
 	double dyji = yi - yj + (net->Ly)*yib;
 	double dxjk = xk - xj + (net->Lx)*xkb + (net->gamma)*ykb;
 	double dyjk = yk - yj + (net->Ly)*ykb;
-
-	//double norm = std::sqrt( dxji*dxji + dyji*dyji ); 
-	//dxji /= norm;
-	//dyji /= norm;
-
-	//norm = std::sqrt( dxjk*dxjk + dyjk*dyjk );
-	//dxjk /= norm;
-	//dyjk /= norm;
 
 	double a = dyji*dxjk - dxji*dyjk;
 	double b = dxji*dxjk + dyji*dyjk;
