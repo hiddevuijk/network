@@ -69,9 +69,11 @@ int main()
         gamma += dg;
 
 		network.shearAffine(dg,eLine, dLine, e);
+		//network.minimize2(eLine, dLine,e);
+
 		energy = network.totalEnergy();
 
-		gEout << gamma <<'\t' << energy << endl;;
+		gEout << fabs(gamma) <<'\t' << energy << endl;;
 		dg *= alpha;
     }
 

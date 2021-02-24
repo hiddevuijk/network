@@ -36,6 +36,8 @@ class Network
 	void shake( boost::mt19937 &rng, double sigma);
 
     void minimize(double eLine, double dLine, double e);
+    void minimize2(double eLine, double dLine, double e);
+
     void shear(double delta_gamma, double eLine, double dLine, double e); 
     void shearAffine(double delta_gamma, double eLine, double dLine, double e); 
     int get_Nv() const {return Nv; }
@@ -120,6 +122,9 @@ class Network
     const gsl_multimin_fdfminimizer_type *T;
     gsl_multimin_fdfminimizer *s;
 
+    const gsl_multimin_fdfminimizer_type *T2;
+    gsl_multimin_fdfminimizer *s2;
+
     gsl_vector *r;
     gsl_multimin_function_fdf functions;
     std::vector<Edge> edges;
@@ -151,6 +156,14 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
     //T = gsl_multimin_fdfminimizer_steepest_descent;
 
     s = gsl_multimin_fdfminimizer_alloc(T,2*Nv);
+
+    //T2= gsl_multimin_fdfminimizer_conjugate_fr;
+    //T2= gsl_multimin_fdfminimizer_conjugate_pr;
+    //T2 = gsl_multimin_fdfminimizer_vector_bfgs;
+    T2 = gsl_multimin_fdfminimizer_vector_bfgs2;
+    //T2 = gsl_multimin_fdfminimizer_steepest_descent;
+
+    s2 = gsl_multimin_fdfminimizer_alloc(T2,2*Nv);
 
     r = gsl_vector_alloc(2*Nv);
 
@@ -286,8 +299,38 @@ void Network::minimize( double eLine, double dLine, double e)
     } while( status == GSL_CONTINUE && iter < maxIter);
     if( iter >= maxIter ) std::cout << "\t Fuck \n";
 
+	std::cout << "\t" << iter << std::endl;
+
+
     // copy to r
     gsl_vector * x = gsl_multimin_fdfminimizer_x(s);
+    for(int i=0;i<2*Nv; ++i) {
+        gsl_vector_set(r,i, gsl_vector_get(x,i) );
+    }
+}
+
+
+void Network::minimize2( double eLine, double dLine, double e)
+{
+    // add params to network
+    gsl_multimin_fdfminimizer_set(s2, &functions, r, eLine, dLine);
+
+    int iter = 0;
+    int status;
+    do{
+        iter++;    
+		status = gsl_multimin_fdfminimizer_iterate(s2);
+        if( status ) break;
+        status = gsl_multimin_test_gradient( s2->gradient, e);
+        
+    } while( status == GSL_CONTINUE && iter < maxIter);
+    if( iter >= maxIter ) std::cout << "\t Fuck \n";
+
+	std::cout << "\t \t" << iter << std::endl;
+
+
+    // copy to r
+    gsl_vector * x = gsl_multimin_fdfminimizer_x(s2);
     for(int i=0;i<2*Nv; ++i) {
         gsl_vector_set(r,i, gsl_vector_get(x,i) );
     }
