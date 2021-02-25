@@ -6,7 +6,6 @@ from sys import exit
 
 data = np.loadtxt("strain.dat")
 N = int( data.shape[0])
-print(N)
 g = data[:N,0]
 Hs = data[:N,1]
 Hb = data[:N,2]
@@ -26,10 +25,6 @@ K = np.gradient(sigma,g)
 plt.scatter(g,H, color='red', label=r"$H$")
 plt.scatter(g,sigma, color='magenta', label=r"$\sigma= \frac{d H}{d \gamma}$")
 plt.scatter(g,K, color='blue', label=r"$K = \frac{ d^2 H}{d\gamma^2}$")
-plt.scatter(g,sxx, label= "sxx")
-plt.scatter(g,sxy, label= "sxy")
-plt.scatter(g,syx, label= "syx")
-plt.scatter(g,syy, label= "syy")
 
 plt.yscale('log')
 plt.xscale('log')

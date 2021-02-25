@@ -14,13 +14,6 @@
 
 using namespace std;
 
-double min( double a, double b) {
-	if( a < b ) return a;
-	else return b;
-}
-
-
-
 int main()
 {
 
@@ -53,6 +46,7 @@ int main()
     Graph graph = generateGraph(Nx,Ny,Lx,z, seed);
 	Network network(graph,Lx,Ly, kappa);
 
+
     ofstream top(topologyName);
     graph.write(top);
     top.close();
@@ -66,16 +60,20 @@ int main()
 
 	double Hs, Hb;
 	vector<double> sigma;
+	int i=0;
     while( fabs(gamma) < gmax ) {
+		
         gamma += dg;
 
 		network.shearAffine(dg,eLine, dLine, e);
-		//network.minimize2(eLine, dLine,e);
-		
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	
-		cout << network.get_forceNorm() << endl;
+		//cout << network.get_forceNorm() << endl;
+		if(i%10 == 0 ){
+			cout << gmax << "\t" << gamma << endl;
+		}
+		i++;
 	
 		sigma = network.stress2();	
 

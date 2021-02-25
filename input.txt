@@ -1,8 +1,8 @@
 #network parameters
 Nx = 20
 Lx = 20
-z = 3.1
-kappa = 1.e-4
+z = 3.3
+kappa = 1e-5
 
 seed  = 113356789
 

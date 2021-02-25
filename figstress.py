@@ -16,6 +16,10 @@ sxy = data[:,4]
 syx = data[:,5]
 syy = data[:,6]
 
+for i in range(N): sxx[i] = abs(sxx[i])
+for i in range(N): sxy[i] = abs(sxy[i])
+for i in range(N): syx[i] = abs(syx[i])
+for i in range(N): syy[i] = abs(syy[i])
 H = Hs + Hb
 
 dg = g[1] - g[0]
