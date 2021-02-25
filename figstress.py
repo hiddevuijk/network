@@ -6,18 +6,20 @@ from sys import exit
 
 data = np.loadtxt("strain.dat")
 N = int( data.shape[0])
-print(N)
-g = data[:N,0]
-Hs = data[:N,1]
-Hb = data[:N,2]
-sxx = data[:N,3]
-sxy = data[:N,4]
-syx = data[:N,5]
-syy = data[:N,6]
+#print(N)
+g = data[:,0]
+for i in range(N): g[i] = abs(g[i])
+Hs = data[:,1]
+Hb = data[:,2]
+sxx = data[:,3]
+sxy = data[:,4]
+syx = data[:,5]
+syy = data[:,6]
 
 H = Hs + Hb
 
 dg = g[1] - g[0]
+#print(dg)
 
 sigma = np.gradient(H,g)
 K = np.gradient(sigma,g)

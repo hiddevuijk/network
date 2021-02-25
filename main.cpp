@@ -64,16 +64,29 @@ int main()
 
 	ofstream gEout( gammaEName );
 
-	double energy;
+	double Hs, Hb;
+	vector<double> sigma;
     while( fabs(gamma) < gmax ) {
         gamma += dg;
 
 		network.shearAffine(dg,eLine, dLine, e);
 		//network.minimize2(eLine, dLine,e);
+		
 
-		energy = network.totalEnergy();
+		Hs = network.edgeEnergy();	
+		Hb = network.bendEnergy();	
+		cout << network.get_forceNorm() << endl;
+	
+		sigma = network.stress2();	
 
-		gEout << fabs(gamma) <<'\t' << energy << endl;;
+		gEout << gamma << '\t';
+		gEout << Hs << '\t';
+		gEout << Hb << '\t';
+		gEout << sigma[0] << '\t';
+		gEout << sigma[1] << '\t';
+		gEout << sigma[2] << '\t';
+		gEout << sigma[3] << endl;
+
 		dg *= alpha;
     }
 
