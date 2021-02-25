@@ -4,9 +4,6 @@
 /*
 to do:
     -- write EdEnergy
-    -- destructors
-
-	-- phi in radians or degrees??
 
 	-- change bend::energy_dEnergy
 */
@@ -32,6 +29,7 @@ class Network
 
   public:
     Network(const Graph&, double Lx, double Ly, double kappa);
+	~Network();
 
 	void shake( boost::mt19937 &rng, double sigma);
 
@@ -145,6 +143,12 @@ class Network
 ///////////////////////////////
 // Network Member Functions  //
 ///////////////////////////////
+Network::~Network()
+{
+	gsl_vector_free(r);
+	gsl_multimin_fminimizer_free(s);
+	gsl_multimin_fminimizer_free(s2);
+}
 
 Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
 {
@@ -238,6 +242,7 @@ double Network::get_forceNorm() const
 		norm += f*f;
 	}
 		
+	gsl_vector_free(df);
 
 	return norm;
 }
@@ -501,6 +506,8 @@ std::vector<double> Network::stress2() const
 	sigma[2] = sigmaYX/(2*Lx*Ly);
 	sigma[3] = sigmaYY/(2*Lx*Ly);
 
+	gsl_vector_free(dH);
+
 	return sigma;
 }
 
@@ -535,6 +542,8 @@ std::vector<double> Network::stress() const
 	sigma[1] = sigmaXY/(Lx*Ly);
 	sigma[2] = sigmaYX/(Lx*Ly);
 	sigma[3] = sigmaYY/(Lx*Ly);
+
+	gsl_vector_free(dH);
 
 	return sigma;
 }
