@@ -7,6 +7,8 @@
             -- throw error when adding bend without edge
             -- throw error when polymerizing nodes without a bend
             -- throw other errors
+
+			-- copy constructor
 */
 
 #include "vec2.h"
