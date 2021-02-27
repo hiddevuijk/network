@@ -37,12 +37,12 @@ class Network
     void minimize2(double eLine, double dLine, double e);
 
 	// deform Network
-    void shear(double delta_gamma, double eLine, double dLine, double e); 
-    void shearAffine(double delta_gamma, double eLine, double dLine, double e); 
-    void stretchX(double delta_epsilonX, double eLine, double dLine, double e); 
-    void stretchXAffine(double delta_epsilonX, double eLine, double dLine, double e); 
-    void stretchY(double delta_epsilonY, double eLine, double dLine, double e); 
-    void stretchYAffine(double delta_epsilonY, double eLine, double dLine, double e); 
+    void shear(double delta_gamma); 
+    void shearAffine(double delta_gamma); 
+    void stretchX(double delta_epsilonX); 
+    void stretchXAffine(double delta_epsilonX); 
+    void stretchY(double delta_epsilonY); 
+    void stretchYAffine(double delta_epsilonY); 
 
     int get_Nv() const {return Nv; }
     int get_Nedges() const { return Ne; }
@@ -174,8 +174,8 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
 
     s = gsl_multimin_fdfminimizer_alloc(T,2*Nv);
 
-    T2 = gsl_multimin_fdfminimizer_conjugate_fr;
-    //T2 = gsl_multimin_fdfminimizer_conjugate_pr;
+    //T2 = gsl_multimin_fdfminimizer_conjugate_fr;
+    T2 = gsl_multimin_fdfminimizer_conjugate_pr;
     //T2 = gsl_multimin_fdfminimizer_vector_bfgs;
     //T2 = gsl_multimin_fdfminimizer_vector_bfgs2;
     //T2 = gsl_multimin_fdfminimizer_steepest_descent;
@@ -305,8 +305,7 @@ void Network::set_l0(double l00)
 	}
 }
 
-void Network::shearAffine( double delta_gamma,
-					double eLine, double dLine, double e )
+void Network::shearAffine( double delta_gamma)
 {
     gamma += delta_gamma;
     double x,y;
@@ -317,27 +316,16 @@ void Network::shearAffine( double delta_gamma,
         gsl_vector_set( r, 2*vi, x+delta_gamma*y);
     }
 
-	minimize(eLine, dLine, e);
 }
 
 
-void Network::shear( double delta_gamma,
-					double eLine, double dLine, double e )
-{
-    gamma += delta_gamma;
-	minimize(eLine, dLine, e);
-}
+void Network::shear( double delta_gamma)
+{ gamma += delta_gamma; }
 
-void Network::stretchX( double delta_epsilonX,
-					double eLine, double dLine, double e )
-{
+void Network::stretchX( double delta_epsilonX )
+{ epsilonX += delta_epsilonX; }
 
-	epsilonX += delta_epsilonX;
-	minimize(eLine, dLine, e);
-}
-
-void Network::stretchXAffine( double delta_epsilonX,
-					double eLine, double dLine, double e )
+void Network::stretchXAffine( double delta_epsilonX)
 {
 	// add Affine deformation
 	double x;
@@ -346,20 +334,13 @@ void Network::stretchXAffine( double delta_epsilonX,
 		gsl_vector_set(r, 2*vi, x*(1+delta_epsilonX) );
 	}
 	epsilonX += delta_epsilonX;
-	minimize(eLine, dLine, e);
 }
 
-void Network::stretchY( double delta_epsilonY,
-					double eLine, double dLine, double e )
-{
-
-	epsilonY += delta_epsilonY;
-	minimize(eLine, dLine, e);
-}
+void Network::stretchY( double delta_epsilonY)
+{ epsilonY += delta_epsilonY; }
 
 
-void Network::stretchYAffine( double delta_epsilonY,
-					double eLine, double dLine, double e )
+void Network::stretchYAffine( double delta_epsilonY)
 {
 
 	// add Affine deformation
@@ -370,7 +351,6 @@ void Network::stretchYAffine( double delta_epsilonY,
 	}
 
 	epsilonY += delta_epsilonY;
-	minimize(eLine, dLine, e);
 }
 void Network::minimize( double eLine, double dLine, double e)
 {
@@ -416,9 +396,8 @@ void Network::minimize2( double eLine, double dLine, double e)
 
 	//std::cout << "\t" << iter << std::endl;
 
-
     // copy to r
-    gsl_vector * x = gsl_multimin_fdfminimizer_x(s);
+    gsl_vector * x = gsl_multimin_fdfminimizer_x(s2);
     for(int i=0;i<2*Nv; ++i) {
         gsl_vector_set(r,i, gsl_vector_get(x,i) );
     }
@@ -631,7 +610,7 @@ double Network::Edge::get_l( const gsl_vector *r, const Network *net) const
 double Network::Edge::energy(const gsl_vector *r,const Network *net) const
 {
     double g = net->gamma*net->Ly;
-    double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*(1+net->epsilonX)*xb - yb*g;
+    double dx = gsl_vector_get(r, 2*i  ) - gsl_vector_get(r,2*j  ) - (net->Lx)*(1+net->epsilonX)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*(1+net->epsilonY)*yb;
 
 
@@ -642,7 +621,7 @@ double Network::Edge::energy(const gsl_vector *r,const Network *net) const
 
 void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network *net) const
 {
-    double g = net->gamma*net->Ly;
+    double g = (net->gamma)*(net->Ly);
     double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*(1+net->epsilonX)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*(1+net->epsilonY)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
@@ -667,7 +646,7 @@ void Network::Edge::dEnergy( const gsl_vector *r, gsl_vector *df, const Network 
 double Network::Edge::energy_dEnergy(const gsl_vector *r, gsl_vector *df, const Network *net) const
 {
 
-    double g = net->gamma*net->Ly;
+    double g = (net->gamma)*(net->Ly);
     double dx = gsl_vector_get(r, 2*i) - gsl_vector_get(r,2*j) - (net->Lx)*(1+net->epsilonX)*xb - yb*g;
     double dy = gsl_vector_get(r, 2*i+1) - gsl_vector_get(r,2*j+1) - (net->Ly)*(1+net->epsilonY)*yb;
     double l = std::sqrt( dx*dx + dy*dy);
@@ -855,7 +834,6 @@ void dEnergy( const gsl_vector *v, void *params, gsl_vector *df)
     for( int ei=0; ei< net->get_Nedges(); ++ei ) {
         net->get_edgeDEnergy(ei, v, df);
     } 
-
 
 	for( int bi=0; bi < net->get_Nbends(); ++bi) {
 		net->get_bendDEnergy(bi, v, df);

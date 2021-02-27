@@ -61,11 +61,17 @@ int main()
 	double Hs, Hb;
 	vector<double> sigma;
 	int i=0;
+
+
     while( fabs(gamma) < gmax ) {
 		
         gamma += dg;
 
-		network.shearAffine(dg,eLine, dLine, e);
+		//network.shearAffine(dg);
+		//network.stretchX(dg);
+		//network.stretchY(dg);
+		network.shearAffine(dg);
+		network.minimize2(eLine, dLine, e);
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	

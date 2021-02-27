@@ -1,15 +1,16 @@
 #network parameters
-Nx = 10
-Lx = 10
+Nx = 50
+Lx = 50
 z = 3.3
-kappa = 1e-8
+kappa = 1e-1
+gammaEName = strain1.dat
 
 seed  = 113356789
 
 #shear parameters
-gmax = 12
-dg = 0.001
-alpha = 1.05
+gmax = 20
+dg = 0.0001
+alpha = 1.025
 
 #minimization parameters
 eLine = 0.01
@@ -20,5 +21,4 @@ e = 1e-16
 topologyName = topology.dat
 r0Name = r0.dat
 rName = r.dat
-gammaEName = strain.dat
 

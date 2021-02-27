@@ -20,6 +20,7 @@ for i in range(N): sxx[i] = abs(sxx[i])
 for i in range(N): sxy[i] = abs(sxy[i])
 for i in range(N): syx[i] = abs(syx[i])
 for i in range(N): syy[i] = abs(syy[i])
+
 H = Hs + Hb
 
 dg = g[1] - g[0]
@@ -43,6 +44,8 @@ plt.xlim([ 0.5*dg, max(g)] )
 plt.ylim([ 1e-17, 10] )
 plt.legend();
 
-plt.xlabel(r"$\gamma$", fontsize=20)
+plt.xlabel(r"$\epsilon$", fontsize=20)
 
+
+plt.tight_layout()
 plt.show()
