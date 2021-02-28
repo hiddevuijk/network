@@ -13,11 +13,18 @@
 template<typename E>
 class Fire {
 public:
+	Fire() {}
 	Fire( int N, E *energy );
 
 	void initialize( const std::vector<double>&);
-	void minimize( const std::vector<double>&);
-	void make_MD_step(); 
+	void minimizeVV( const std::vector<double>&);
+	void minimizeVV2( const std::vector<double>&);
+	void minimizeEE( const std::vector<double>&);
+	void minimizeSIE( const std::vector<double>&);
+	void make_VV_step(); 
+	void make_VV2_step(); 
+	void make_EE_step(); 
+	void make_SIE_step(); 
 	void make_FIRE_step();
 
 	int N; // number of variables
@@ -28,6 +35,7 @@ public:
 	double fdec;
 	double alpha0;
 	double falpha;
+	double m;
 
 	double dtmax;
 	double dt0;
@@ -56,10 +64,6 @@ Fire<E>::Fire( int N, E *energy )
 	alpha0 = 0.1;
 	falpha = 0.99;
 
-	dtmax = 0.1;
-	dt0 = 0.03;
-	error = 1e-6;
-
 
 }
 
@@ -78,29 +82,76 @@ void Fire<E>::initialize( const std::vector<double>& xInit)
 }
 
 template<typename E>
-void Fire<E>::minimize( const std::vector<double>& xInit)
+void Fire<E>::minimizeVV( const std::vector<double>& xInit)
 {
 	initialize(xInit);
 
+	int it  =0 ;
 	do {
-		make_MD_step();
 		make_FIRE_step();
+		make_VV_step();
+		it++;
 	} while(Fnorm > error );
+	//std::cout << "\t\t" << it << std::endl;
 }
 
 template<typename E>
-void Fire<E>::make_MD_step()
+void Fire<E>::minimizeVV2( const std::vector<double>& xInit)
+{
+	initialize(xInit);
+
+	int it  =0 ;
+	do {
+		make_FIRE_step();
+		make_VV_step();
+		it++;
+	} while(Fnorm > error );
+	//std::cout << "\t\t" << it << std::endl;
+}
+
+template<typename E>
+void Fire<E>::minimizeEE( const std::vector<double>& xInit)
+{
+	initialize(xInit);
+
+	int it  =0 ;
+	do {
+		make_FIRE_step();
+		make_EE_step();
+		it++;
+	} while(Fnorm > error );
+	//std::cout << "\t\t" << it << std::endl;
+}
+
+template<typename E>
+void Fire<E>::minimizeSIE( const std::vector<double>& xInit)
+{
+	initialize(xInit);
+
+	int it  =0 ;
+	do {
+		make_FIRE_step();
+		make_EE_step();
+		it++;
+	} while(Fnorm > error );
+	//std::cout << "\t\t" << it << std::endl;
+}
+
+
+
+template<typename E>
+void Fire<E>::make_VV_step()
 {
 	// assumes F(t) is correct
 
 	// set x(t+dt)
 	for(int i=0; i<N; ++i) {
-		x[i] += v[i]*dt + 0.5*F[i]*dt*dt;;
+		x[i] += v[i]*dt + 0.5*F[i]*dt*dt/m;
 	}
 
 	// set v(t+dt) with F(t)
 	for(int i=0; i<N; ++i) {
-		v[i] += 0.5*F[i]*dt;
+		v[i] += 0.5*F[i]*dt/m;
 	}
 
 
@@ -109,10 +160,70 @@ void Fire<E>::make_MD_step()
 
 	// set v(t+dt) with F(t+dt)
 	for(int i=0; i<N; ++i) {
-		v[i] += 0.5*F[i]*dt;
+		v[i] += 0.5*F[i]*dt/m;
 	}
 
 }
+
+template<typename E>
+void Fire<E>::make_VV2_step()
+{
+	// assumes F(t) is correct
+
+	// set v(t+dt/2) with F(t)
+	for(int i=0; i<N; ++i) {
+		v[i] += 0.5*F[i]*dt/m;
+		x[i] += dt*v[i];
+	}
+
+	// calculate F(t+dt)
+	energy->dE(F,x);
+
+	// set v(t+dt) with F(t+dt)
+	for(int i=0; i<N; ++i) {
+		v[i] += 0.5*F[i]*dt/m;
+	}
+
+}
+
+
+template<typename E>
+void Fire<E>::make_EE_step()
+{
+	// assumes F(t) is correct
+
+	// set x(t+dt)
+	for(int i=0; i<N; ++i) {
+		x[i] += v[i]*dt;
+	}
+
+	// calculate F(t+dt)
+	energy->dE(F,x);
+
+	// set v(t+dt) with F(t+dt)
+	for(int i=0; i<N; ++i) {
+		v[i] += F[i]*dt/m;
+	}
+
+}
+
+
+template<typename E>
+void Fire<E>::make_SIE_step()
+{
+	// assumes F(t) is correct
+
+	// set x(t+dt)
+	for(int i=0; i<N; ++i) {
+		v[i] += dt*F[i]/m;
+		x[i] += v[i]*dt;
+	}
+
+	// calculate F(t+dt)
+	energy->dE(F,x);
+}
+
+
 
 template<typename E>
 void Fire<E>::make_FIRE_step()
@@ -127,30 +238,30 @@ void Fire<E>::make_FIRE_step()
 		vnorm += v[i]*v[i];
 		P += v[i]*F[i];
 	}
-
 	Fnorm = std::sqrt(Fnorm);
 	vnorm = std::sqrt(vnorm);
 
-	// step F2
-	for(int i=0;i<N; ++i) {
-		v[i] = (1-alpha)*v[i] + alpha*F[i]*vnorm/Fnorm;
-	}
+
+	
 
 	// step F3
- 	
 	if( P <= 0 ) {
 		dt *= fdec;
 		alpha = alpha0;
 		// v[i] = 0
 		std::fill( v.begin(), v.end(), 0.);
 		NPneg = 0;
-	} else if( P > 0 and NPneg > Nmin ) {
-		dt = std::min(dt*finc, dtmax);
-		alpha *= falpha;
-		++NPneg;
 	} else {
-		++NPneg;
-	}
+		NPneg++;
+		for(int i=0;i<N; ++i) {
+			v[i] = (1-alpha)*v[i] + alpha*F[i]*vnorm/Fnorm;
+		}
+
+		if( NPneg > Nmin ) {
+			dt = std::min(dt*finc, dtmax);
+			alpha *= falpha;
+		}
+	} 
 }
 
 

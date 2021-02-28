@@ -34,9 +34,10 @@ int main()
 	double alpha = config.read<double>("alpha");
 
 
-	double eLine = config.read<double>("eLine");
-	double dLine = config.read<double>("dLine");
 	double e = config.read<double>("e");
+	double dt0 = config.read<double>("dt0");
+	double dtmax = config.read<double>("dtmax");
+	double m = config.read<double>("m");
 
 	string topologyName = config.read<string>("topologyName");
 	string r0Name = config.read<string>("r0Name");
@@ -59,7 +60,7 @@ int main()
 	ofstream gEout( gammaEName );
 
 	double Hs, Hb;
-	vector<double> sigma;
+	vector<double> sigma(4);
 	int i=0;
 
 
@@ -71,7 +72,7 @@ int main()
 		//network.stretchX(dg);
 		//network.stretchY(dg);
 		network.shearAffine(dg);
-		network.minimize2(eLine, dLine, e);
+		network.minimize(e, dt0, dtmax, m);
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	
@@ -81,7 +82,6 @@ int main()
 		}
 		i++;
 	
-		sigma = network.stress2();	
 
 		gEout << gamma << '\t';
 		gEout << Hs << '\t';
