@@ -72,7 +72,7 @@ for ei in range(Ne):
 plt.gca().set_aspect('equal')
 
 plt.subplot(1,2,2)
-rList = open('r.dat').readlines()
+rList = open('rcompressed.dat').readlines()
 xList = np.zeros(Nv)
 yList = np.zeros(Nv)
 
@@ -112,7 +112,7 @@ for ei in range(Ne):
     yb = edges[ei][3];
 
     if( xb == 0 and yb == 0): 
-        plt.plot( [ xfrom - gamma*yfrom, xto - gamma*yto], [yfrom, yto], linewidth=3, color='grey' )
+        plt.plot( [ xfrom , xto ], [yfrom, yto], linewidth=3, color='grey' )
     else: 
         continue
         plt.plot( [ xfrom , xto + xb*Lx + gamma*yb ], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
@@ -125,6 +125,6 @@ for ei in range(Ne):
 ##for i in range(Nv):
 ##    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
 #
-#plt.gca().set_aspect('equal')
+plt.gca().set_aspect('equal')
 
 plt.show()

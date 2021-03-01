@@ -80,6 +80,15 @@ int main()
 			cout << gmax << "\t" << gamma << endl;
 		}
 		i++;
+
+
+        if( false ) {
+
+            ofstream out_r("configs/r"+std::to_string(i));
+            network.savePositions(out_r);
+            out_r.close();
+
+        }
 	
 		sigma = network.stress2();	
 

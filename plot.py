@@ -8,7 +8,7 @@ topology.close()
 
 Lx = 10
 Ly = Lx*np.sqrt(3/4.)
-gamma = 0
+gamma = .5
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
 Nb = int( lines[2].strip() )
@@ -112,11 +112,11 @@ for ei in range(Ne):
     yb = edges[ei][3];
 
     if( xb == 0 and yb == 0): 
-        plt.plot( [ xfrom - gamma*yfrom, xto - gamma*yto], [yfrom, yto], linewidth=3, color='grey' )
+        plt.plot( [ xfrom , xto ], [yfrom, yto], linewidth=3, color='grey' )
     else: 
-        continue
-        plt.plot( [ xfrom , xto + xb*Lx + gamma*yb ], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
-        plt.plot( [ xto + gamma*yb , xfrom-xb*Lx], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
+        plt.plot( [ xfrom, xto + xb*Lx + yb*gamma*Ly], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
+        plt.plot( [ xto, xfrom-xb*Lx - yb*gamma*Ly ], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
+
 
 #
 ##plt.scatter(xList, yList,color='black', s=30, zorder=10)

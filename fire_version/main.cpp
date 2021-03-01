@@ -35,9 +35,15 @@ int main()
 
 
 	double e = config.read<double>("e");
+    int Nmin = config.read<int>("Nmin");
 	double dt0 = config.read<double>("dt0");
 	double dtmax = config.read<double>("dtmax");
-	double m = config.read<double>("m");
+	double dtmin = config.read<double>("dtmin");
+	double finc = config.read<double>("finc");
+	double fdec = config.read<double>("fdec");
+    double alpha0 = config.read<double>("alpha0");
+    double falpha = config.read<double>("falpha");
+    double m = config.read<double>("m");
 
 	string topologyName = config.read<string>("topologyName");
 	string r0Name = config.read<string>("r0Name");
@@ -63,6 +69,14 @@ int main()
 	vector<double> sigma(4);
 	int i=0;
 
+    network.stretchXAffine(-0.05);
+    network.stretchYAffine(-0.05);
+    network.minimize(e, dt0, dtmax, dtmin,finc, fdec, Nmin, alpha0, falpha,  m);
+
+    ofstream outc("rcompressed.dat");
+    network.savePositions(outc);
+    outc.close();
+
 
     while( fabs(gamma) < gmax ) {
 		
@@ -72,13 +86,13 @@ int main()
 		//network.stretchX(dg);
 		//network.stretchY(dg);
 		network.shearAffine(dg);
-		network.minimize(e, dt0, dtmax, m);
+		network.minimize(e, dt0, dtmax, dtmin,finc, fdec, Nmin, alpha0, falpha,  m);
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	
 		//cout << network.get_forceNorm() << endl;
 		if(i%10 == 0 ){
-			cout << gmax << "\t" << gamma << endl;
+			//cout << gmax << "\t" << gamma << endl;
 		}
 		i++;
 	

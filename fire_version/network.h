@@ -12,7 +12,7 @@ to do:
 #include "graph.h"
 #include "generate_graph.h"
 
-#include "fire.h"
+#include "fire2.h"
 
 #include <math.h>
 
@@ -28,7 +28,7 @@ class Network
 
 	void shake( boost::mt19937 &rng, double sigma);
 
-    void minimize(double e, double dt0, double dtmax, double m);
+    void minimize( double e, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m);
 
 	// deform Network
     void shear(double delta_gamma); 
@@ -290,13 +290,19 @@ void Network::stretchYAffine( double delta_epsilonY)
 
 	epsilonY += delta_epsilonY;
 }
-void Network::minimize( double e, double dt0, double dtmax, double m)
+void Network::minimize( double e, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m)
 {
-	// copy from fire to network
 	minimizer.error = e;
 	minimizer.dt0 = dt0;
 	minimizer.dtmax = dtmax;
+    minimizer.dtmin = dtmin;
+    minimizer.finc = finc;
+    minimizer.fdec = fdec;
+    minimizer.Nmin = Nmin;
+    minimizer.alpha0 = alpha0;
+    minimizer.falpha = falpha;
 	minimizer.m = m;
+
 
 	minimizer.minimizeSIE(r);
 	r = minimizer.x;

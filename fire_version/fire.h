@@ -61,8 +61,13 @@ Fire<E>::Fire( int N, E *energy )
 	Nmin = 5;
 	finc = 1.1;
 	fdec = 0.5;
-	alpha0 = 0.1;
+	alpha0 = 0.25;
 	falpha = 0.99;
+	m = 1e-1;
+
+	dtmax = 0.1;
+	dt0 = 0.03;
+	error = 1e-6;
 
 
 }

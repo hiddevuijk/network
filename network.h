@@ -175,9 +175,9 @@ Network::Network(const Graph& g, double Lxx, double Lyy, double kappaa)
     s = gsl_multimin_fdfminimizer_alloc(T,2*Nv);
 
     //T2 = gsl_multimin_fdfminimizer_conjugate_fr;
-    T2 = gsl_multimin_fdfminimizer_conjugate_pr;
+    //T2 = gsl_multimin_fdfminimizer_conjugate_pr;
     //T2 = gsl_multimin_fdfminimizer_vector_bfgs;
-    //T2 = gsl_multimin_fdfminimizer_vector_bfgs2;
+    T2 = gsl_multimin_fdfminimizer_vector_bfgs2;
     //T2 = gsl_multimin_fdfminimizer_steepest_descent;
     s2 = gsl_multimin_fdfminimizer_alloc(T2,2*Nv);
 
@@ -482,7 +482,7 @@ std::vector<double> Network::stress2() const
 	
 		sigmaXX += gsl_vector_get(dH, 2*edges[ei].j) * (xi - xj);
 		sigmaXY += gsl_vector_get(dH, 2*edges[ei].j) * (yi - yj);	
-		sigmaYX += gsl_vector_get(dH, 2*edges[ei].j+1) * (yi - xj);	
+		sigmaYX += gsl_vector_get(dH, 2*edges[ei].j+1) * (xi - xj);	
 		sigmaYY += gsl_vector_get(dH, 2*edges[ei].j+1) * (yi - yj);	
 
 		gsl_vector_set(dH, 2*edges[ei].i, 0);
