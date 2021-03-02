@@ -8,7 +8,7 @@ topology.close()
 
 Lx = 10
 Ly = Lx*np.sqrt(3/4.)
-gamma = .5
+gamma = 0.
 Nv = int( lines[0].strip() )
 Ne = int( lines[1].strip() )
 Nb = int( lines[2].strip() )
@@ -114,6 +114,7 @@ for ei in range(Ne):
     if( xb == 0 and yb == 0): 
         plt.plot( [ xfrom , xto ], [yfrom, yto], linewidth=3, color='grey' )
     else: 
+        continue
         plt.plot( [ xfrom, xto + xb*Lx + yb*gamma*Ly], [yfrom, yto + yb*Ly], linewidth=3, color='lightgrey' )
         plt.plot( [ xto, xfrom-xb*Lx - yb*gamma*Ly ], [yto , yfrom - yb*Ly], linewidth=3, color='lightgrey' )
 
@@ -125,6 +126,6 @@ for ei in range(Ne):
 ##for i in range(Nv):
 ##    plt.annotate( i, ( xList[i]-d, yList[i]-d ), color='red', zorder = 11 )
 #
-#plt.gca().set_aspect('equal')
+plt.gca().set_aspect('equal')
 
 plt.show()

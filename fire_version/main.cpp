@@ -90,9 +90,10 @@ int main()
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	
+        sigma = network.stress();
 		//cout << network.get_forceNorm() << endl;
-		if(i%10 == 0 ){
-			//cout << gmax << "\t" << gamma << endl;
+		if(i%1 == 0 ){
+			cout << gmax << "\t" << gamma << endl;
 		}
 		i++;
 	

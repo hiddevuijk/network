@@ -45,6 +45,9 @@ class Network
     double edgeEnergy() const; 
     double bendEnergy() const; 
     double totalEnergy() const; 
+
+	std::vector<double> stress() const;
+
 	void dE( std::vector<double> &F, const  std::vector<double> &r) const;
 
     double get_edgeEnergy( int ei, const  std::vector<double> &r) const
@@ -356,6 +359,99 @@ double Network::totalEnergy() const
 	}
     return e/(Lx*Ly);
 }
+
+std::vector<double> Network::stress() const
+{
+    double sigmaXX = 0;
+    double sigmaXY = 0;
+    double sigmaYX = 0;
+    double sigmaYY = 0;
+
+    std::vector<double> dH(2*Nv, 0.0);
+
+    double xi, yi, xj,yj,xk,yk;
+    int i, j, k;
+
+    for( int ei=0; ei<get_Nedges(); ++ei) {
+        get_edgeDEnergy(ei, r, dH);
+
+        i = 2*edges[ei].i;
+        j = 2*edges[ei].j;
+
+        xi = r[i];
+        yi = r[i+1];
+        xj = r[j];
+        yj = r[j+1];
+
+        sigmaXX += dH[i  ] * (xj - xi);
+        sigmaXY += dH[i  ] * (yj - yi);
+        sigmaYX += dH[i+1] * (xj - xi);
+        sigmaYY += dH[i+1] * (yj - yi);
+        
+        sigmaXX += dH[j  ] * (xi - xj);
+        sigmaXY += dH[j  ] * (yi - yj);
+        sigmaYX += dH[j+1] * (xi - xj);
+        sigmaYY += dH[j+1] * (yi - yj);
+
+        dH[i] = 0;
+        dH[i+1] = 0;
+        dH[j] = 0;
+        dH[j+1] = 0;
+    }
+   
+    for(int bi =0;bi< get_Nbends(); ++bi) {
+        get_bendDEnergy(bi, r, dH);
+
+        i = 2*bends[bi].i;
+        j = 2*bends[bi].j;
+        k = 2*bends[bi].k;
+
+        xi = r[i];
+        yi = r[i+1];
+        xj = r[j];
+        yj = r[j+1];
+        xk = r[k];
+        yk = r[k+1];
+
+        sigmaXX += dH[i  ] * (xj - xi);
+        sigmaXY += dH[i  ] * (yj - yi);
+        sigmaYX += dH[i+1] * (xj - xi);
+        sigmaYY += dH[i+1] * (yj - yi);
+        
+        sigmaXX += dH[j  ] * (xi - xj);
+        sigmaXY += dH[j  ] * (yi - yj);
+        sigmaYX += dH[j+1] * (xi - xj);
+        sigmaYY += dH[j+1] * (yi - yj);
+ 
+        sigmaXX += dH[j  ] * (xk - xj);
+        sigmaXY += dH[j  ] * (yk - yj);
+        sigmaYX += dH[j+1] * (xk - xj);
+        sigmaYY += dH[j+1] * (yk - yj);
+ 
+        sigmaXX += dH[k  ] * (xj - xk);
+        sigmaXY += dH[k  ] * (yj - yk);
+        sigmaYX += dH[k+1] * (xj - xk);
+        sigmaYY += dH[k+1] * (yj - yk);
+
+
+
+        dH[i] = 0;
+        dH[i+1] = 0;
+        dH[j] = 0;
+        dH[j+1] = 0;
+        dH[k] = 0;
+        dH[k+1] = 0;
+    } 
+    
+
+    std::vector<double> sigma(4,0);
+    sigma[0] = sigmaXX/(2*Lx*Ly);
+    sigma[1] = sigmaXY/(2*Lx*Ly);
+    sigma[2] = sigmaYX/(2*Lx*Ly);
+    sigma[3] = sigmaYY/(2*Lx*Ly);
+    return sigma;
+}
+
 
 void Network::dE( std::vector<double> &F, const  std::vector<double> &r) const
 {

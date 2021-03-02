@@ -7,6 +7,7 @@ from sys import exit
 data = np.loadtxt("strain.dat")
 N = int( data.shape[0])
 g = data[:N,0]
+for i in range(N): g[i] = abs(g[i])
 Hs = data[:N,1]
 Hb = data[:N,2]
 sxx = data[:N,3]

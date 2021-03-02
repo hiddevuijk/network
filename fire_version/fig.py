@@ -29,7 +29,7 @@ plt.scatter(g,H, color='red', label=r"$H$")
 plt.scatter(g,sigma, color='magenta', label=r"$\sigma= \frac{d H}{d \gamma}$")
 plt.scatter(g,K, color='blue', label=r"$K = \frac{ d^2 H}{d\gamma^2}$")
 #plt.scatter(g,dK, color='brown', label=r"$dK $")
-plt.scatter(g,dK2, color='orange', label=r"$\frac{ d log(K)}{d log(\gamma)} $")
+#plt.scatter(g,dK2, color='orange', label=r"$\frac{ d log(K)}{d log(\gamma)} $")
 
 
 plt.yscale('log')

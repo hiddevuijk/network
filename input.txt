@@ -1,15 +1,15 @@
 #network parameters
-Nx = 10
-Lx = 10
-z = 3.9
-kappa = 1e-6
+Nx = 16
+Lx = 16
+z = 3.3
+kappa = 1e-4
 
-seed  = 123356789
+seed  = 143356789
 
 #shear parameters
-gmax = .5
+gmax = 12.
 dg = 0.001
-alpha = 1.1
+alpha = 1.05
 
 #minimization parameters
 eLine = 0.01

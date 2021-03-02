@@ -61,6 +61,18 @@ int main()
 	double Hs, Hb;
 	vector<double> sigma;
 	int i=0;
+    boost::random::mt19937 rng(2*seed);
+    network.shake(rng, 0.1);
+    network.set_l0();
+    network.set_phi0();
+
+    network.stretchXAffine(-0.01);
+    network.stretchYAffine(-0.01);
+    network.minimize(eLine, dLine, e);
+
+    ofstream out(rName);
+    network.savePositions(out);
+    out.close();
 
 
     while( fabs(gamma) < gmax ) {
@@ -71,19 +83,19 @@ int main()
 		//network.stretchX(dg);
 		//network.stretchY(dg);
 		network.shearAffine(dg);
-		network.minimize2(eLine, dLine, e);
+		network.minimize(eLine, dLine, e);
 
 		Hs = network.edgeEnergy();	
 		Hb = network.bendEnergy();	
 		//cout << network.get_forceNorm() << endl;
 		if(i%10 == 0 ){
-			cout << gmax << "\t" << gamma << endl;
+			//cout << gmax << "\t" << gamma << endl;
 		}
 		i++;
 
 
-        if( false ) {
-
+        if( true ) {
+            cout << i << '\t' << gamma << endl;
             ofstream out_r("configs/r"+std::to_string(i));
             network.savePositions(out_r);
             out_r.close();
@@ -103,9 +115,9 @@ int main()
 		dg *= alpha;
     }
 
-    ofstream out(rName);
-    network.savePositions(out);
-    out.close();
+    //ofstream out(rName);
+    //network.savePositions(out);
+    //out.close();
 
 
 
