@@ -6,7 +6,7 @@ topology = open('topology.dat')
 lines = topology.readlines()
 topology.close()
 
-Lx = 10
+Lx = 40
 Ly = Lx*np.sqrt(3/4.)
 gamma = 0
 Nv = int( lines[0].strip() )

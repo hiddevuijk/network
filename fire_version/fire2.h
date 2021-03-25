@@ -32,6 +32,14 @@ public:
         for(int i=0; i<N; ++i) Fnorm += F[i]*F[i];
         Fnorm = std::sqrt(Fnorm);
     }
+
+    double Fmax() {
+        double max = 0;
+        for(int i=0;i<N; ++i) {
+             max = std::fabs(F[i]) > max ? std::fabs(F[i]) : max;
+        }
+        return max;
+    }
 	int N; // number of variables
 	E *energy;
 
@@ -49,6 +57,7 @@ public:
 
 	double dt0;
 	double error;
+    double error_max;
 
 	// changes	
 	std::vector<double> x; // state 
@@ -57,8 +66,10 @@ public:
 
 	double alpha;
 	double dt;
-	double NPneg;
+	int NPneg;
 	double Fnorm;
+    int NF;
+    
 
 };
 
@@ -78,6 +89,7 @@ void Fire<E>::initialize( const std::vector<double>& xInit)
 	dt = dt0;
 	alpha = alpha0;
 	NPneg = 0;
+    NF = 0;
 }
 
 template<typename E>
@@ -91,7 +103,8 @@ void Fire<E>::minimizeVV( const std::vector<double>& xInit)
 		make_VV_step();
         set_Fnorm();
 		it++;
-	} while(Fnorm > N*error );
+        NF++;
+	} while(Fnorm > N*error or Fmax() > error_max );
 	//std::cout << "\t\t" << it << std::endl;
 }
 
@@ -106,7 +119,8 @@ void Fire<E>::minimizeEE( const std::vector<double>& xInit)
 		make_EE_step();
         set_Fnorm();
 		it++;
-	} while(Fnorm > N*error );
+        NF++;
+	} while(Fnorm > N*error or Fmax() > error_max );
 	//std::cout << "\t\t" << it << std::endl;
 }
 
@@ -122,7 +136,9 @@ void Fire<E>::minimizeSIE( const std::vector<double>& xInit)
 		make_EE_step();
         set_Fnorm();
 		it++;
-	} while(Fnorm > N*error );
+        NF++;
+	} while(Fnorm > N*error or Fmax() > error_max );
+    //} while( Fmax() > error );
 }
 
 
@@ -220,13 +236,13 @@ void Fire<E>::make_FIRE_step()
 	} else { // P <= 0
 		NPneg = 0;
 
-		dt *= fdec;
-        dt = std::max( dt*fdec, dtmin);
-		alpha = alpha0;
-
 		for(int i=0;i<N; ++i) {
 			x[i] -= 0.5*dt*v[i];
 		}
+
+		//dt *= fdec;
+        dt = std::max( dt*fdec, dtmin);
+		alpha = alpha0;
 
 		std::fill( v.begin(), v.end(), 0.0);
 	}

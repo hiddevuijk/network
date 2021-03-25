@@ -28,7 +28,7 @@ class Network
 
 	void shake( boost::mt19937 &rng, double sigma);
 
-    void minimize( double e, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m);
+    void minimize( double e, double emax, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m);
 
 	// deform Network
     void shear(double delta_gamma); 
@@ -293,9 +293,10 @@ void Network::stretchYAffine( double delta_epsilonY)
 
 	epsilonY += delta_epsilonY;
 }
-void Network::minimize( double e, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m)
+void Network::minimize( double e, double emax, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m)
 {
 	minimizer.error = e;
+	minimizer.error_max = emax;
 	minimizer.dt0 = dt0;
 	minimizer.dtmax = dtmax;
     minimizer.dtmin = dtmin;
@@ -307,7 +308,7 @@ void Network::minimize( double e, double dt0, double dtmax,double dtmin, double 
 	minimizer.m = m;
 
 
-	minimizer.minimizeSIE(r);
+	minimizer.minimizeVV(r);
 	r = minimizer.x;
 }
 
