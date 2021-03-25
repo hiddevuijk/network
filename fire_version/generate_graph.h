@@ -3,7 +3,6 @@
 
 #include "graph.h"
 
-
 #include "boost/random.hpp"
 
 
@@ -78,9 +77,12 @@ void shuffle( V& v, boost::random::mt19937 & rng)
 
 
 
-Graph generateGraph(int Nx, int Ny, double Lx, double z, long int seed = 123456789)
+Graph generateGraph(int Nx, int Ny, double Lx, double z, long int seed = 123456789, double sigma = 0)
 {
     boost::random::mt19937 rng(seed);
+    boost::random::normal_distribution<double> ndist(0,1);
+    boost::variate_generator<boost::mt19937&, boost::normal_distribution<double> > rndist(rng,ndist);
+
     boost::random::uniform_int_distribution<int> randX(0,Nx-1);
     boost::random::uniform_int_distribution<int> randY(0,Ny-1);
 
@@ -232,6 +234,15 @@ Graph generateGraph(int Nx, int Ny, double Lx, double z, long int seed = 1234567
         ++i;
     }
     graph.removeUnconnectedVertices();
+
+    // shake vertices
+    vec2 r;
+    for(int vi = 0; vi < graph.get_Nv(); ++vi) {
+        r = graph.getVertexPosition(vi); 
+        r.x += sigma*rndist();
+        r.y += sigma*rndist();
+        graph.setVertexPosition(vi, r.x, r.y);
+    }
 
     return graph;
 

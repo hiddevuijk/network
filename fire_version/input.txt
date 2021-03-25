@@ -1,10 +1,11 @@
 #network parameters
-Nx = 100 
-Lx = 100
+Nx = 10 
+Lx = 10
 z = 3.3
 kappa = 0.001
 
 seed  = 223456789
+s = 0.01
 
 #shear parameters
 gmax = 12

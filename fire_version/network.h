@@ -26,7 +26,6 @@ class Network
   public:
     Network(const Graph&, double Lx, double Ly, double kappa);
 
-	void shake( boost::mt19937 &rng, double sigma);
 
     void minimize( double e, double emax, double dt0, double dtmax,double dtmin, double finc, double fdec, int Nmin, double alpha0,  double falpha, double m);
 
@@ -209,17 +208,6 @@ double Network::get_forceNorm() const
 		
 	return norm;
 }
-void Network::shake( boost::mt19937 &rng, double sigma)
-{
-	boost::normal_distribution<> nd(0.0, sigma);
-	boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > random_normal(rng, nd);
-
-	for( int vi=0; vi<2*Nv; ++vi){
-		r[vi] += random_normal();
-	}
-	
-}
-
 
 void Network::set_kappa()
 {

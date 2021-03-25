@@ -27,6 +27,7 @@ int main()
     double z = config.read<double>("z");
 	double kappa = config.read<double>("kappa");
 	long int seed  = config.read<long int>("seed");
+    double s = config.read<double>("s");
 	
     double gmax = config.read<double>("gmax");
     double dg = config.read<double>("dg");
@@ -51,7 +52,8 @@ int main()
 	string rName = config.read<string>("rName");
 	string gammaEName = config.read<string>("gammaEName");
 
-    Graph graph = generateGraph(Nx,Ny,Lx,z, seed);
+
+    Graph graph = generateGraph(Nx,Ny,Lx,z, seed, s);
 	Network network(graph,Lx,Ly, kappa);
 
 

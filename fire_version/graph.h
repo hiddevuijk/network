@@ -66,6 +66,8 @@ class Graph {
 
     double averageConnectivity() const;
 
+    double get_Nv() const { return vertices.size(); }
+
     void showAdj() const;
     void showBends() const;
     void showPolymers();
