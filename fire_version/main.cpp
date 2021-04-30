@@ -95,7 +95,7 @@ int main()
 		Hb = network.bendEnergy();	
         sigma = network.stress();
 		//cout << network.get_forceNorm() << endl;
-		if(i%1 == 0 ){
+		if(i%10 == 0 ){
 			cout << gmax << "\t" << gamma << "\t" << Hs + Hb << "\t" << network.minimizer.Fnorm/ network.minimizer.N  <<
                     "\t" << network.minimizer.Fmax() <<  "\t" << network.minimizer.NF << endl;
             cout << "______________________________________________________________" << endl;
